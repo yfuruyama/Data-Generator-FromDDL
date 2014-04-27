@@ -8,27 +8,28 @@ use Data::Dummy::FromDDL::Generator;
 
 our $VERSION = "0.01";
 
-sub read_ddl_from_stdin {
-    local $/;
-    return <STDIN>;
-};
+sub new {
+    my ($class, $ddl, $parser) = @_;
+    return bless {
+        ddl => $ddl,
+        parser => $parser,
+    }, $class;
+}
 
 sub generate {
-    my $ddl = read_ddl_from_stdin;
+    my ($self, $n) = @_;
     my $tr = SQL::Translator->new;
-    $tr->parser('MySQL')->($tr, $ddl);
+    $tr->parser($self->{parser})->($tr, $self->{ddl});
 
     my @tables = $tr->schema->get_tables;
     my $resolved = resolve_data_generation_order(\@tables);
-    # print Dumper $resolved;
 
     my @generators;
     for (@$resolved) {
         my $generator = Data::Dummy::FromDDL::Generator->new($_);
-        $generator->generate(100000, \@generators);
+        $generator->generate($n, \@generators);
         push @generators, $generator;
         print $generator->to_sql_insert_clause;
-        # print Dumper $generator->records;
     }
 };
 
@@ -68,22 +69,6 @@ sub _exist_all_foreign_key_reference {
     }
     return 1;
 }
-
-# AUTO_INCREMENT
-# is_auto_increment=1になっている
-# 1から始めれば良さそう
-
-# -n: number of rows
-# -f, --foreign_key 
-# -i, --include
-# -e, --enclude
-
-# 流れ
-# FOREIGN KEYがないもの(つまりどのテーブルにも依存していないもの)からダミーデータを生成していく
-
-# ユーザが変更できるもの
-# parser: DDLがどのRDB用なのか
-# output_format: 出力のフォーマット
 
 
 1;

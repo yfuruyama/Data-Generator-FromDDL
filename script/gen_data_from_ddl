@@ -1,0 +1,68 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Data::Dummy::FromDDL;
+use Data::Dummy::FromDDL::Util qw(
+    normalize_parser_str
+);
+use Pod::Usage;
+use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
+
+my $n;
+my $out = '';
+my $parser = 'MySQL';
+my $help = 0;
+GetOptions(
+    "num|n=i" => \$n,
+    "help|h" => \$help,
+    "out|o=s" => \$out,
+    "parser|p=s" => \$parser,
+) or pod2usage(2);
+# -f, --foreign_key 
+# -i, --include
+# -e, --exclude
+
+# SQLのINSERT INTOはANSIで標準化されているものを出す
+
+pod2usage(1) if $help;
+
+my $ddl = do {
+    local $/;
+    if (@ARGV) {
+        open my $fh, '<', $ARGV[0];
+        <$fh>;
+    } else {
+        <STDIN>;
+    }
+};
+
+$parser = normalize_parser_str($parser);
+my $d = Data::Dummy::FromDDL->new($ddl, $parser);
+$d->generate($n);
+
+__END__
+
+=encoding utf-8
+
+=head1 NAME
+
+gen_data_from_ddl - Using Data::Dummy::DDL
+
+=head1 SYNOPSYS
+
+gen_data_from_ddl [options]
+
+ Options:
+   -h|--help
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-help>
+
+Print help message and exits.
+
+=cut

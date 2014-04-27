@@ -3,6 +3,7 @@ use 5.008005;
 use strict;
 use warnings;
 use Data::Dumper;
+use List::Util qw(any);
 
 sub new {
     my ($class, $table) = @_;
@@ -20,7 +21,10 @@ sub generate {
     my $records = {};
     for my $field ($table->get_fields) {
         my $method = _normalize_data_type($field->data_type);
-        my $cols = $self->$method($field, $n);
+        # my @field_constraints = grep { 
+            # any {$_ -> } $_->fields;
+        # } @constraints;
+        my $cols = $self->$method($field, undef, $others);
         $records->{$field->name} = $cols;
     }
     $self->records($records);
@@ -42,7 +46,7 @@ sub to_sql_insert_clause {
         } @fields;
         push @rows, "($row)";
     }
-    my $format = "INSERT INTO `%s` (%s) VALUES %s;";
+    my $format = "-- \nINSERT INTO `%s` (%s) VALUES %s;\n\n";
     my $columns = join ',', map { $_->name } @fields;
     my $values = join ',', @rows;
     return sprintf $format, $table->name, $columns, $values;
@@ -96,24 +100,33 @@ sub n {
 # }
 
 sub integer {
-    my ($self, $field, $n) = @_;
+    my ($self, $field, $constraint, $generators) = @_;
     # TODO
     # unsigned
-    if ($field->is_auto_increment) {
-        return [1..$n];
+    if ($constraint) {
+        my $c_type = uc($constraint->type);
+        if ($c_type eq 'PRIMARY KEY' or $field->is_auto_increment) {
+            return [1..$self->n];
+        } elsif ($c_type eq 'FOREIGN KEY') {
+            my $ref_table = $constraint->reference_table;
+        }
     } else {
-        return [map { int(rand(2 ** 32)) } (1..$n)];
+        if ($field->is_auto_increment) {
+            return [1..$self->n];
+        }
     }
+
+    return [map { int(rand(2 ** 32)) } (1..$self->n)];
 }
 
 sub varchar {
-    my ($self, $field, $n) = @_;
+    my ($self, $field) = @_;
     my $field_name = $field->name;
     my $field_size = $field->size;
 
-    my $record_prefix = substr $field_name, 0, $field_size - length($n);
-    my $format = $record_prefix . "%0" . length($n) . "d";
-    return [map { sprintf $format, $_ } (1..$n)];
+    my $record_prefix = substr $field_name, 0, $field_size - length($self->n);
+    my $format = $record_prefix . "%0" . length($self->n) . "d";
+    return [map { sprintf $format, $_ } (1..$self->n)];
 }
 
 1;
