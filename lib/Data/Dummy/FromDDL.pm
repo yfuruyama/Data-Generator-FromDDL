@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use SQL::Translator;
 use Data::Dumper;
-use Getopt::Long;
+use Data::Dummy::FromDDL::Generator;
 
 our $VERSION = "0.01";
 
@@ -20,7 +20,16 @@ sub generate {
 
     my @tables = $tr->schema->get_tables;
     my $resolved = resolve_data_generation_order(\@tables);
-    print Dumper $resolved;
+    # print Dumper $resolved;
+
+    my @generators;
+    for (@$resolved) {
+        my $generator = Data::Dummy::FromDDL::Generator->new($_);
+        $generator->generate(100000, \@generators);
+        push @generators, $generator;
+        print $generator->to_sql_insert_clause;
+        # print Dumper $generator->records;
+    }
 };
 
 sub resolve_data_generation_order {
