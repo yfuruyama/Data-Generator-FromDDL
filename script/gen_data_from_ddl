@@ -30,13 +30,21 @@ pod2usage(1)
 pod2usage("Can't specify both of --include and --exclude options")
     if $include && $exclude;
 
+# テーブルごとに異なる行数指定できるようにしたい
+# --num=20 => 全てのテーブル20行
+# --num=users:10,recipes:50,100 => usersテーブルは10行、recipesテーブルは50行、他は100行
+sub parser_num_option {
+    my $num_str = shift;
+}
+
 my $ddl = do {
     local $/;
     if (@ARGV) {
         # read from multiple files
         my $ddl_str = '';
         for my $ddl_file (@ARGV) {
-            open my $fh, '<', $ddl_file;
+            open my $fh, '<', $ddl_file
+                or die("Can't open $ddl_file to read\n");
             $ddl_str .= <$fh>;
         }
         $ddl_str;
@@ -44,12 +52,11 @@ my $ddl = do {
         <STDIN>;
     }
 };
-# ここでddlにlintかけた方がいいかも
 
 my $out_fh;
 if ($out) {
     open $out_fh, '>', $out
-        or die("Can't open $out to write.");
+        or die("Can't open $out to write\n");
 } else {
     $out_fh = *STDOUT;
 }
@@ -87,8 +94,12 @@ gen_data_from_ddl [options]
 
 =over 8
 
-=item B<-help>
+=item B<-h | --help>
 
 Print help message and exits.
+
+=item B<-n | --num>
+
+Generate B<num> records.
 
 =cut
