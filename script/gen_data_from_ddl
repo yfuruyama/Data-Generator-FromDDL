@@ -14,32 +14,58 @@ my $n;
 my $out = '';
 my $parser = 'MySQL';
 my $help = 0;
+my $include = '';
+my $exclude = '';
 GetOptions(
     "num|n=i" => \$n,
     "help|h" => \$help,
     "out|o=s" => \$out,
     "parser|p=s" => \$parser,
+    "include|i=s" => \$include,
+    "exclude|e=s" => \$exclude,
 ) or pod2usage(2);
-# -f, --foreign_key 
-# -i, --include
-# -e, --exclude
 
-# SQLのINSERT INTOはANSIで標準化されているものを出す
-
-pod2usage(1) if $help;
+pod2usage(1)
+    if $help;
+pod2usage("Can't specify both of --include and --exclude options")
+    if $include && $exclude;
 
 my $ddl = do {
     local $/;
     if (@ARGV) {
-        open my $fh, '<', $ARGV[0];
-        <$fh>;
+        # read from multiple files
+        my $ddl_str = '';
+        for my $ddl_file (@ARGV) {
+            open my $fh, '<', $ddl_file;
+            $ddl_str .= <$fh>;
+        }
+        $ddl_str;
     } else {
         <STDIN>;
     }
 };
+# ここでddlにlintかけた方がいいかも
+
+my $out_fh;
+if ($out) {
+    open $out_fh, '>', $out
+        or die("Can't open $out to write.");
+} else {
+    $out_fh = *STDOUT;
+}
 
 $parser = normalize_parser_str($parser);
-my $d = Data::Dummy::FromDDL->new($ddl, $parser);
+
+my @include = split ',', $include;
+my @exclude = split ',', $exclude;
+
+my $d = Data::Dummy::FromDDL->new(
+    ddl => $ddl,
+    parser => $parser,
+    out_fh => $out_fh,
+    include => \@include,
+    exclude => \@exclude,
+);
 $d->generate($n);
 
 __END__

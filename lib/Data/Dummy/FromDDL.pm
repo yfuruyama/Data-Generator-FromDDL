@@ -5,24 +5,29 @@ use warnings;
 use SQL::Translator;
 use Data::Dumper;
 use Data::Dummy::FromDDL::Generator;
+use List::MoreUtils qw(any);
 
 our $VERSION = "0.01";
 
 sub new {
-    my ($class, $ddl, $parser) = @_;
+    my ($class, @args) = @_;
     return bless {
-        ddl => $ddl,
-        parser => $parser,
+        @args
     }, $class;
 }
 
+# 複合PRIMARY KEYは厳しいかも
 sub generate {
     my ($self, $n) = @_;
     my $tr = SQL::Translator->new;
     $tr->parser($self->{parser})->($tr, $self->{ddl});
 
     my @tables = $tr->schema->get_tables;
-    my $resolved = resolve_data_generation_order(\@tables);
+    my @filtered_tables = filter_tables(\@tables, $self->{include}, $self->{exclude});
+
+    my $resolved = resolve_data_generation_order(\@filtered_tables);
+    # print $_->name . "\n" for @$resolved;
+    # return;
 
     my @generators;
     for (@$resolved) {
@@ -31,7 +36,26 @@ sub generate {
         push @generators, $generator;
         print $generator->to_sql_insert_clause;
     }
-};
+}
+
+sub filter_tables {
+    my ($tables, $include, $exclude) = @_;
+
+    my @filtered;
+    if (scalar(@$include)) {
+        for my $t (@$tables) {
+            push @filtered, $t if any { $t->name eq $_ } @$include;
+        }
+    } elsif (scalar(@$exclude)) {
+        for my $t (@$tables) {
+            push @filtered, $t unless any { $t->name eq $_ } @$exclude;
+        }
+    } else {
+        @filtered = @$tables;
+    }
+
+    return @filtered;
+}
 
 sub resolve_data_generation_order {
     my $tables = shift;
@@ -87,6 +111,20 @@ Data::Dummy::FromDDL - It's new $module
 =head1 DESCRIPTION
 
 Data::Dummy::FromDDL is ...
+
+How this module satisfies some database constraints.
+
+=item PRIMARY KEY constraint
+
+To be written...
+
+=item UNIQUE KEY constraint
+
+This module genereates records as uniquely as possible.
+
+=item FOREIGN KEY constraint
+
+To be written...
 
 =head1 LICENSE
 
