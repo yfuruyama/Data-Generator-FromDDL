@@ -27,14 +27,14 @@ sub generate {
 
     my $resolved = resolve_data_generation_order(\@filtered_tables);
     # print $_->name . "\n" for @$resolved;
-    # return;
 
     my @generators;
+    my $out_fh = $self->{out_fh};
     for (@$resolved) {
         my $generator = Data::Dummy::FromDDL::Generator->new($_);
         $generator->generate($n, \@generators);
         push @generators, $generator;
-        print $generator->to_sql_insert_clause;
+        print $out_fh $generator->to_sql_insert_clause;
     }
 }
 
