@@ -84,6 +84,7 @@ $parser = normalize_parser_str($parser);
 
 my @include = split ',', $include;
 my @exclude = split ',', $exclude;
+my $num = parse_num_option($n);
 
 my $generator = Data::FromDDL->new(
     ddl => $ddl,
@@ -91,7 +92,7 @@ my $generator = Data::FromDDL->new(
     include => \@include,
     exclude => \@exclude,
 );
-$generator->generate($n, $out_fh, $format, $pretty);
+$generator->generate($num, $out_fh, $format, $pretty);
 
 __END__
 

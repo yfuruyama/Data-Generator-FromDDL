@@ -16,7 +16,7 @@ sub new {
 }
 
 sub generate {
-    my ($self, $n, $out_fh, $format, $pretty) = @_;
+    my ($self, $num, $out_fh, $format, $pretty) = @_;
     my $builder_class = $self->{builder_class}
         || 'Data::FromDDL::Builder::SerialOrder';
     my $director = Data::FromDDL::Director->new({
@@ -26,7 +26,7 @@ sub generate {
         include => $self->{include},
         exclude => $self->{exclude},
     });
-    my @recordsets = $director->generate($n);
+    my @recordsets = $director->generate($num);
 
     my $output = do {
         my $formatter;

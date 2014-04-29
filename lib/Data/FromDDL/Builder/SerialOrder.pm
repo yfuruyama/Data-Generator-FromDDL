@@ -15,15 +15,8 @@ sub new {
     bless $args, $class;
 };
 
-# TODO : support these data types
-# - float
-# - double
-# - enum
-
 datatype 'integer' => sub {
     my ($builder, $field, $n, $recordsets) = @_;
-    my $byte = get_numeric_type_byte($field->data_type);
-    my $is_unsigned = $field->extra->{unsigned} || 0;
 
     if ($field->is_foreign_key) {
         my $constraint = $field->foreign_key_reference;
@@ -44,6 +37,8 @@ datatype 'integer' => sub {
         return [1..$n];
     }
 
+    my $is_unsigned = $field->extra->{unsigned} || 0;
+    my $byte = get_numeric_type_byte($field->data_type);
     if ($is_unsigned) {
         return [map { int(rand(2 ** ($byte * 8))) } (1..$n)];
     } else {
@@ -89,5 +84,18 @@ datatype 'char, varchar, tinytext, text, mediumtext' => sub {
     my $format = $record_prefix . "%0" . length($n) . "d";
     return [map { sprintf $format, $_ } (1..$n)];
 };
+
+datatype 'enum' => sub {
+    my ($builder, $field, $n, $recordsets) = @_;
+    my $list = $field->extra->{list} || [];
+    my $size = scalar(@$list);
+    croak("Can't select value from empty ENUM list: " . $field->name)
+        if $size == 0;
+    return [map { $list->[int(rand($size))] } (1..$n)];
+};
+
+# TODO : support these data types
+# - float
+# - double
 
 1;

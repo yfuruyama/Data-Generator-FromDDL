@@ -18,7 +18,7 @@ sub new {
 }
 
 sub generate {
-    my ($self, $n) = @_;
+    my ($self, $num) = @_;
     my @tables = $self->_get_right_order_tables;
     croak("No tables found: You might not specify all tables.")
         unless @tables;
@@ -29,9 +29,21 @@ sub generate {
             table => $table,
             recordsets => \@recordsets,
         });
+        my $n = $self->_get_num_for_table($num, $table->name);
         push @recordsets, $builder->generate($n);
     }
     return @recordsets;
+}
+
+sub _get_num_for_table {
+    my ($self, $num, $table_name) = @_;
+    if (ref $num eq 'HASH') {
+        return exists $num->{tables}{$table_name} ? 
+            $num->{tables}{$table_name} :
+            $num->{all};
+    } else {
+        return $num;
+    }
 }
 
 sub _get_right_order_tables {
