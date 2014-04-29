@@ -1,5 +1,5 @@
 {
-   "abstract" : "It's new $module",
+   "abstract" : "Dummy data generator from DDL",
    "author" : [
       "Yuuki Furuyama <addsict@gmail.com>"
    ],
@@ -12,7 +12,7 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
-   "name" : "Data-Dummy-FromDDL",
+   "name" : "Data-FromDDL",
    "no_index" : {
       "directory" : [
          "t",
@@ -54,5 +54,16 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/addsict/Data-FromDDL/issues"
+      },
+      "homepage" : "https://github.com/addsict/Data-FromDDL",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/addsict/Data-FromDDL.git",
+         "web" : "https://github.com/addsict/Data-FromDDL"
+      }
+   },
    "version" : "0.01"
 }
