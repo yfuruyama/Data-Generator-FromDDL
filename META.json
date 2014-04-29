@@ -1,5 +1,5 @@
 {
-   "abstract" : "Dummy data generator from DDL",
+   "abstract" : "Dummy data generator from DDL statements",
    "author" : [
       "Yuuki Furuyama <addsict@gmail.com>"
    ],

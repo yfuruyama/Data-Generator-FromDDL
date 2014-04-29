@@ -49,7 +49,7 @@ __END__
 
 =head1 NAME
 
-Data::FromDDL - Dummy data generator from DDL
+Data::FromDDL - Dummy data generator from DDL statements
 
 =head1 SYNOPSIS
 
@@ -63,7 +63,7 @@ Data::FromDDL - Dummy data generator from DDL
 
 =head1 DESCRIPTION
 
-Data::FromDDL is dummy data generator from DDL statements intended to easily prepare dummy records for RDBMS.
+Data::FromDDL is dummy data generator intended to easily prepare dummy records for RDBMS.
 This module takes care of some constraints specific to RDBMS and generates records in the right order.
 
 Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
