@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 use Data::Dumper;
-use Data::Generator::FromDDL;
-use Data::Generator::FromDDL::Util qw(
+use Data::FromDDL;
+use Data::FromDDL::Util qw(
     normalize_parser_str
 );
 use Pod::Usage;
@@ -81,16 +81,13 @@ $parser = normalize_parser_str($parser);
 my @include = split ',', $include;
 my @exclude = split ',', $exclude;
 
-my $d = Data::Generator::FromDDL->new(
+my $generator = Data::FromDDL->new(
     ddl => $ddl,
     parser => $parser,
-    out_fh => $out_fh,
     include => \@include,
     exclude => \@exclude,
 );
-
-$d->generate($n);
-# $d->generate(parse_num_option($n));
+$generator->generate($n, $out_fh);
 
 __END__
 

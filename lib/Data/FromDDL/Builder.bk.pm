@@ -1,5 +1,4 @@
-package Data::Generator::FromDDL::Generator;
-use 5.008005;
+package Data::Generator::FromDDL::Builder;
 use strict;
 use warnings;
 use Data::Dumper;
@@ -103,6 +102,10 @@ sub n {
     # shift->integer(@_);
 # }
 
+# datatype 'integer' => sub {
+# };
+# sub integer
+
 sub integer {
     my ($self, $field, $constraints, $generators, $byte) = @_;
     # TODO
@@ -173,5 +176,12 @@ sub varchar {
 
 #TODO
 #timestamp
+#mediumint 3byte
+#bigint 8byte
+#float
+#double
+#tinytext
+#text
+#mediumtext
 
 1;

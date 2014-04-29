@@ -1,4 +1,4 @@
-package Data::Generator::FromDDL::Util;
+package Data::FromDDL::Util;
 use 5.008005;
 use strict;
 use warnings;
