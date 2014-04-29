@@ -1,13 +1,13 @@
 package Data::FromDDL::RecordSet;
 use strict;
 use warnings;
-use Data::Dumper;
 use List::Util qw(first);
+use JSON ();
+use YAML::Tiny ();
 use Class::Accessor::Lite (
     rw => [qw(table n cols)],
 );
-use JSON ();
-use YAML::Tiny ();
+
 use Data::FromDDL::Util qw(need_quote_data_type);
 
 sub new {

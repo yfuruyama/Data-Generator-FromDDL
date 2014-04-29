@@ -1,10 +1,14 @@
 package Data::FromDDL::Director;
 use strict;
 use warnings;
-use List::MoreUtils qw(any);
-use Data::FromDDL::RecordSet;
-use Data::Dumper;
 use Carp qw(croak);
+use List::MoreUtils qw(any);
+use Class::Accessor::Lite (
+    rw => [qw(builder_class parser ddl include exclude)],
+);
+
+use Data::FromDDL::Util qw(normalize_parser_str);
+use Data::FromDDL::RecordSet;
 
 sub new {
     my ($class, $args) = @_;
@@ -12,7 +16,12 @@ sub new {
     my $builder_class = $args->{builder_class};
     my $builder_file = $builder_class;
     $builder_file =~ s!::!/!g;
-    require "$builder_file.pm";
+    eval {
+        require "$builder_file.pm";
+    };
+    if ($@) {
+        croak("Can't require $builder_class");
+    }
 
     return bless $args, $class;
 }
@@ -25,12 +34,14 @@ sub generate {
 
     my @recordsets;
     for my $table (@tables) {
-        my $builder = $self->{builder_class}->new({
+        my $builder = $self->builder_class->new({
             table => $table,
             recordsets => \@recordsets,
         });
         my $n = $self->_get_num_for_table($num, $table->name);
-        push @recordsets, $builder->generate($n);
+        if ($n) {
+            push @recordsets, $builder->generate($n);
+        }
     }
     return @recordsets;
 }
@@ -56,14 +67,14 @@ sub _get_right_order_tables {
 sub _get_all_tables {
     my $self = shift;
     my $tr = SQL::Translator->new;
-    $tr->parser($self->{parser})->($tr, $self->{ddl});
+    $tr->parser(normalize_parser_str($self->parser))->($tr, $self->ddl);
     return $tr->schema->get_tables;
 }
 
 sub _filter_tables {
     my ($self, $tables) = @_;
-    my @include = @{$self->{include}};
-    my @exclude = @{$self->{exclude}};
+    my @include = @{$self->include};
+    my @exclude = @{$self->exclude};
 
     my @filtered;
     if (scalar(@include)) {

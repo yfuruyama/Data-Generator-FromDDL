@@ -3,28 +3,25 @@ use 5.008005;
 use strict;
 use warnings;
 use SQL::Translator;
-use Data::Dumper;
+use Class::Accessor::Lite (
+    new => 1,
+    rw => [qw(builder_class parser ddl include exclude)],
+);
+
 use Data::FromDDL::Director;
 
 our $VERSION = "0.01";
 
-sub new {
-    my ($class, @args) = @_;
-    return bless {
-        @args
-    }, $class;
-}
-
 sub generate {
     my ($self, $num, $out_fh, $format, $pretty) = @_;
-    my $builder_class = $self->{builder_class}
+    my $builder_class = $self->builder_class
         || 'Data::FromDDL::Builder::SerialOrder';
     my $director = Data::FromDDL::Director->new({
         builder_class => $builder_class,
-        parser => $self->{parser},
-        ddl => $self->{ddl},
-        include => $self->{include},
-        exclude => $self->{exclude},
+        parser => $self->parser,
+        ddl => $self->ddl,
+        include => $self->include,
+        exclude => $self->exclude,
     });
     my @recordsets = $director->generate($num);
 

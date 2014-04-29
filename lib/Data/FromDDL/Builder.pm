@@ -1,24 +1,22 @@
 package Data::FromDDL::Builder;
 use strict;
 use warnings;
-use Data::Dumper;
 use Carp qw(croak);
 use List::Util qw(first);
 use List::MoreUtils qw(any);
 use Class::Data::Inheritable;
 use Class::Accessor::Lite (
+    new => 1,
     rw => [qw(table recordsets)],
 );
-use Data::FromDDL::RecordSet;
 use base qw(Exporter Class::Data::Inheritable);
+
+use Data::FromDDL::RecordSet;
+
 our @EXPORT = qw(datatype);
 
 __PACKAGE__->mk_classdata('dispatch_table', {});
 
-sub new {
-    my ($class, $args) = @_;
-    return bless $args, $class;
-}
 
 sub generate {
     my ($self, $n) = @_;

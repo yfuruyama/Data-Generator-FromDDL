@@ -1,19 +1,15 @@
 package Data::FromDDL::Builder::SerialOrder;
 use strict;
 use warnings;
-use Data::Dumper;
 use List::Util qw(first);
 use Carp qw(croak);
 use POSIX qw(strftime);
+
 use Data::FromDDL::Builder;
 use Data::FromDDL::RecordSet;
 use Data::FromDDL::Util qw(get_numeric_type_byte);
 our @ISA = qw(Data::FromDDL::Builder);
 
-sub new {
-    my ($class, $args) = @_;
-    bless $args, $class;
-};
 
 datatype 'integer' => sub {
     my ($builder, $field, $n, $recordsets) = @_;

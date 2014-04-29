@@ -1,8 +1,7 @@
 package Data::FromDDL::Util;
-use 5.008005;
 use strict;
 use warnings;
-use base 'Exporter';
+use base qw(Exporter);
 
 our @EXPORT_OK = qw(
     normalize_parser_str
