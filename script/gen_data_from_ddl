@@ -2,38 +2,11 @@
 
 use strict;
 use warnings;
-
-use Data::Dumper;
-use Data::FromDDL;
-use Data::FromDDL::Util qw(
-    normalize_parser_str
-);
 use Pod::Usage;
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
 
-my $n;
-my $out = '';
-my $parser = 'MySQL';
-my $help = 0;
-my $include = '';
-my $exclude = '';
-my $pretty;
-my $format;
-GetOptions(
-    "num|n=s" => \$n,
-    "help|h" => \$help,
-    "out|o=s" => \$out,
-    "parser|p=s" => \$parser,
-    "format|f=s" => \$format,
-    "include|i=s" => \$include,
-    "exclude|e=s" => \$exclude,
-    "pretty" => \$pretty,
-) or pod2usage(2);
-
-pod2usage(1)
-    if $help;
-pod2usage("Can't specify both of --include and --exclude options")
-    if $include && $exclude;
+use Data::FromDDL;
+use Data::FromDDL::Util;
 
 sub parse_num_option {
     # $num_option_str is like 'users:20,bugs:30,100'
@@ -56,43 +29,81 @@ sub parse_num_option {
     return $parsed;
 }
 
-my $ddl = do {
+sub read_ddl {
+    my $ddl_files = shift;
     local $/;
-    if (@ARGV) {
+    if (@$ddl_files) {
         # read from multiple files
         my $ddl_str = '';
-        for my $ddl_file (@ARGV) {
+        for my $ddl_file (@$ddl_files) {
             open my $fh, '<', $ddl_file
                 or die("Can't open $ddl_file to read\n");
             $ddl_str .= <$fh>;
         }
-        $ddl_str;
+        return $ddl_str;
     } else {
-        <STDIN>;
+        return <STDIN>;
     }
-};
-
-my $out_fh;
-if ($out) {
-    open $out_fh, '>', $out
-        or die("Can't open $out to write\n");
-} else {
-    $out_fh = *STDOUT;
 }
 
-$parser = normalize_parser_str($parser);
+sub main {
+    my $help;
+    my $n;
+    my $parser = 'mysql';
+    my $include = '';
+    my $exclude = '';
+    my $out;
+    my $format = 'sql';
+    my $pretty;
+    GetOptions(
+        "help|h" => \$help,
+        "num|n=s" => \$n,
+        "parser|p=s" => \$parser,
+        "include|i=s" => \$include,
+        "exclude|e=s" => \$exclude,
+        "out|o=s" => \$out,
+        "format|f=s" => \$format,
+        "pretty" => \$pretty,
+    ) or pod2usage(2);
 
-my @include = split ',', $include;
-my @exclude = split ',', $exclude;
-my $num = parse_num_option($n);
+    pod2usage({
+        -exitval => 0,
+        -verbose => 99,
+        -noperldoc => 1,
+        -sections => 'SYNOPSIS|OPTIONS',
+    }) if $help;
+    pod2usage({
+        -message => "Can't specify both of --include and --exclude options",
+        -exitval => 1,
+        -verbose => 99,
+        -noperldoc => 1,
+        -sections => 'SYNOPSIS|OPTIONS',
+    }) if $include && $exclude;
 
-my $generator = Data::FromDDL->new(
-    ddl => $ddl,
-    parser => $parser,
-    include => \@include,
-    exclude => \@exclude,
-);
-$generator->generate($num, $out_fh, $format, $pretty);
+    my $ddl = read_ddl(\@ARGV);
+
+    my $out_fh;
+    if ($out) {
+        open $out_fh, '>', $out
+            or die("Can't open $out to write\n");
+    } else {
+        $out_fh = *STDOUT;
+    }
+
+    my @include = split ',', $include;
+    my @exclude = split ',', $exclude;
+    my $num = parse_num_option($n);
+
+    my $generator = Data::FromDDL->new({
+        ddl => $ddl,
+        parser => $parser,
+        include => \@include,
+        exclude => \@exclude,
+    });
+    $generator->generate($num, $out_fh, $format, $pretty);
+}
+
+&main();
 
 __END__
 
@@ -100,32 +111,51 @@ __END__
 
 =head1 NAME
 
-gen_data_from_ddl - Using Data::Generator::FromDDL
+gen_data_from_ddl - dummy data generator from DDL
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
-gen_data_from_ddl [options]
-
- Options:
-   -h|--help
+    $ gen_data_from_ddl [options...] your_ddl.sql
+    $ gen_data_from_ddl --num=users:10,100 --include=users,blogs --format=sql --pretty your_ddl.sql
 
 =head1 OPTIONS
 
-=over 8
+=over 4
 
-=item B<-h | --help>
+=item -n|--num
 
-Print help message and exits.
-
-=item B<-n | --num>
-
-Generate B<num> records.
-
-You can specify number of records of each table. 
+Number of records generated.
 
 Example:
---num=20 => 20 records are generated in all tables.
---num=users:10,blogs:50,100 => 10 records for users table, 50 records for blogs table, and 100 records for other tables.
 
+    --num=20 (20 records for all tables)
+    --num=users:10,100 (10 records for users and 100 records for other tables)
+
+=item -p|--parser (default: MySQL)
+
+Parser for DDL. Choices are MySQL, SQLite, Oracle, or PostgreSQL.
+
+=item -i|--include
+
+Only tables which are specified this option are processed.
+
+=item -e|--exclude
+
+Tables which are specified this option are ignored(--include and --exclude options are exclusively used).
+
+=item -o|--out
+
+Output file.
+
+=item -f|--format (default: SQL)
+
+Output format. Choices are SQL, JSON, or YAML.
+
+=item --pretty
+
+Print output prettily.
+
+=back
 
 =cut
+
