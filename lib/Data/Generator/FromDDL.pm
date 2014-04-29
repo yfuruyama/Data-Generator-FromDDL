@@ -1,10 +1,10 @@
-package Data::Dummy::FromDDL;
+package Data::Generator::FromDDL;
 use 5.008005;
 use strict;
 use warnings;
 use SQL::Translator;
 use Data::Dumper;
-use Data::Dummy::FromDDL::Generator;
+use Data::Generator::FromDDL::Generator;
 use List::MoreUtils qw(any);
 
 our $VERSION = "0.01";
@@ -31,7 +31,7 @@ sub generate {
     my @generators;
     my $out_fh = $self->{out_fh};
     for (@$resolved) {
-        my $generator = Data::Dummy::FromDDL::Generator->new($_);
+        my $generator = Data::Generator::FromDDL::Generator->new($_);
         $generator->generate($n, \@generators);
         push @generators, $generator;
         print $out_fh $generator->to_sql_insert_clause;
@@ -102,15 +102,15 @@ __END__
 
 =head1 NAME
 
-Data::Dummy::FromDDL - It's new $module
+Data::Generator::FromDDL - It's new $module
 
 =head1 SYNOPSIS
 
-    use Data::Dummy::FromDDL;
+    use Data::Generator::FromDDL;
 
 =head1 DESCRIPTION
 
-Data::Dummy::FromDDL is ...
+Data::Generator::FromDDL is ...
 
 How this module satisfies some database constraints.
 

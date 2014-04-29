@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 use Data::Dumper;
-use Data::Dummy::FromDDL;
-use Data::Dummy::FromDDL::Util qw(
+use Data::Generator::FromDDL;
+use Data::Generator::FromDDL::Util qw(
     normalize_parser_str
 );
 use Pod::Usage;
@@ -81,7 +81,7 @@ $parser = normalize_parser_str($parser);
 my @include = split ',', $include;
 my @exclude = split ',', $exclude;
 
-my $d = Data::Dummy::FromDDL->new(
+my $d = Data::Generator::FromDDL->new(
     ddl => $ddl,
     parser => $parser,
     out_fh => $out_fh,
@@ -89,7 +89,8 @@ my $d = Data::Dummy::FromDDL->new(
     exclude => \@exclude,
 );
 
-$d->generate(parse_num_option($n));
+$d->generate($n);
+# $d->generate(parse_num_option($n));
 
 __END__
 
@@ -97,7 +98,7 @@ __END__
 
 =head1 NAME
 
-gen_data_from_ddl - Using Data::Dummy::DDL
+gen_data_from_ddl - Using Data::Generator::FromDDL
 
 =head1 SYNOPSYS
 
