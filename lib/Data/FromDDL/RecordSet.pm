@@ -6,6 +6,7 @@ use List::Util qw(first);
 use Class::Accessor::Lite (
     rw => [qw(table n cols)],
 );
+use JSON qw(encode_json);
 use Data::FromDDL::Util qw(need_quote_data_type);
 
 sub new {
@@ -35,13 +36,12 @@ sub get_values {
     }
 }
 
-sub to_sql {
+sub _construct_rows {
     my $self = shift;
     my $cols = $self->cols;
-    my @fields = map { $_->{field} } @$cols;
     my @rows;
     for my $i (0..($self->n)-1) {
-        my $row = join ',', map { 
+        my $row = [map { 
             my $field = $_->{field};
             my $values = $_->{values};
             if (need_quote_data_type($field->data_type)) {
@@ -49,17 +49,44 @@ sub to_sql {
             } else {
                 $values->[$i];
             }
-        } @$cols;
-        push @rows, "($row)";
+        } @$cols];
+        push @rows, $row;
     }
 
-    my $format = "INSERT INTO `%s` (%s) VALUES %s;";
+    return @rows;
+}
+
+sub to_sql {
+    my ($self, $pretty) = @_;
+    my $cols = $self->cols;
+    my @fields = map { $_->{field} } @$cols;
+    my @rows = $self->_construct_rows;
+
+    my $format;
+    my $record_sep;
+    if ($pretty) {
+        $format = <<"EOL";
+INSERT INTO
+    `%s` (%s)
+VALUES
+    %s;
+EOL
+        $record_sep = ",\n    ";
+    } else {
+        $format = "INSERT INTO `%s` (%s) VALUES %s;";
+        $record_sep = ',';
+    }
+    my $values = join $record_sep, map { "(" . join(',', @$_) . ")"; } @rows;
     my $columns = join ',', map { $_->name } @fields;
-    my $values = join ',', @rows;
     return sprintf $format, $self->table->name, $columns, $values;
 }
 
 sub to_json {
+    my ($self, $pretty) = @_;
+    my $cols = $self->cols;
+    my @fields = map { $_->{field} } @$cols;
+    my @rows = $self->_construct_rows;
+    # my $
 }
 
 sub to_yaml {

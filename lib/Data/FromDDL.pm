@@ -17,7 +17,7 @@ sub new {
 
 # 複合PRIMARY KEYは厳しいかも
 sub generate {
-    my ($self, $n, $out_fh) = @_;
+    my ($self, $n, $out_fh, $pretty) = @_;
     my $builder_class = $self->{builder_class}
         || 'Data::FromDDL::Builder::SerialOrder';
     my $director = Data::FromDDL::Director->new({
@@ -28,8 +28,16 @@ sub generate {
         exclude => $self->{exclude},
     });
     my @recordsets = $director->generate($n);
-    my $sql = join "\n\n", map { $_->to_sql } @recordsets;
-    print $out_fh $sql . "\n";
+    my $format = lc($self->{format}) || 'sql';
+
+    my $output = do {
+        if ($format eq 'sql') {
+            join "\n\n", map { $_->to_sql($pretty) } @recordsets;
+        } elsif ($format eq 'json') {
+            # join "\n\n", map { $_->to_sql } @recordsets;
+        }
+    };
+    print $out_fh $output . "\n";
 }
 
 

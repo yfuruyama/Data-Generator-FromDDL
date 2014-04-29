@@ -17,6 +17,7 @@ my $parser = 'MySQL';
 my $help = 0;
 my $include = '';
 my $exclude = '';
+my $pretty;
 GetOptions(
     "num|n=s" => \$n,
     "help|h" => \$help,
@@ -24,6 +25,7 @@ GetOptions(
     "parser|p=s" => \$parser,
     "include|i=s" => \$include,
     "exclude|e=s" => \$exclude,
+    "pretty" => \$pretty,
 ) or pod2usage(2);
 
 pod2usage(1)
@@ -87,7 +89,7 @@ my $generator = Data::FromDDL->new(
     include => \@include,
     exclude => \@exclude,
 );
-$generator->generate($n, $out_fh);
+$generator->generate($n, $out_fh, $pretty);
 
 __END__
 
