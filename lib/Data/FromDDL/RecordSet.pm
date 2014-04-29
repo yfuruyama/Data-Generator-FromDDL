@@ -98,7 +98,7 @@ EOL
         $record_sep = ',';
     }
     my $values = join $record_sep, map { "(" . join(',', @$_) . ")"; } @rows;
-    my $columns = join ',', map { $_->name } @fields;
+    my $columns = join ',', map { '`' . $_->name . '`' } @fields;
     return sprintf $format, $self->table->name, $columns, $values;
 }
 
