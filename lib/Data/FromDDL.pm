@@ -18,10 +18,10 @@ sub generate {
         || 'Data::FromDDL::Builder::SerialOrder';
     my $director = Data::FromDDL::Director->new({
         builder_class => $builder_class,
-        parser => $self->parser,
+        parser => $self->parser || 'mysql',
         ddl => $self->ddl,
-        include => $self->include,
-        exclude => $self->exclude,
+        include => $self->include || [],
+        exclude => $self->exclude || [],
     });
     my @recordsets = $director->generate($num);
 
@@ -36,6 +36,8 @@ sub generate {
         }
         join "\n", map { $_->$formatter($pretty) } @recordsets;
     };
+
+    $out_fh ||= *STDOUT;
     print $out_fh $output . "\n";
 }
 
@@ -47,31 +49,67 @@ __END__
 
 =head1 NAME
 
-Data::FromDDL - It's new $module
+Data::FromDDL - Dummy data generator from DDL
 
 =head1 SYNOPSIS
 
     use Data::FromDDL;
 
+    my $generator = Data::FromDDL->new({
+        ddl => 'CREATE TABLE users (....);',
+        parser => 'mysql',
+    });
+    $generator->generate(100);
+
 =head1 DESCRIPTION
 
-Data::FromDDL is ...
+Data::FromDDL is dummy data generator from DDL statements intended to easily prepare dummy records for RDBMS.
+This module takes care of some constraints specific to RDBMS and generates records in the right order.
 
-How this module satisfies some database constraints.
+Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
-Composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not currently supported.
+=head1 METHODS
 
-=item PRIMARY KEY constraint
+=over 4
 
-To be written...
+=item B<new>
 
-=item UNIQUE KEY constraint
+    Data::FromDDL->new(%options);
 
-This module genereates records as uniquely as possible.
+Create a new instance.
+Possible options are:
 
-=item FOREIGN KEY constraint
+=over 4
 
-To be written...
+=item ddl => $ddl
+
+Description of DDL. This option is required.
+
+=item parser => $parser // 'MySQL'
+
+Parser for ddl. Choices are 'MySQL', 'SQLite', 'Oracle', or 'PostgreSQL'.
+
+=item builder_class => $builder_class // 'Data::FromDDL::Builder::SerialOrder'
+
+Builder class.
+
+=item include => [@tables] // []
+
+Target tables.
+
+=item exclude => [@tables] // []
+
+Ignored tables.
+
+=back
+
+=item B<generate>
+
+    $generator->generate($num, $out_fh, $format, $pretty);
+
+Generate dummy data.
+
+=back
 
 =head1 LICENSE
 
