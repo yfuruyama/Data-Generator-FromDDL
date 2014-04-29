@@ -20,25 +20,29 @@ sub generate {
     my ($self, $n) = @_;
     my $table = $self->{table};
     my @constraints = $table->get_constraints;
-    # my $records = {};
+    my $recordset = Data::FromDDL::RecordSet->new($table, $n);
     for my $field ($table->get_fields) {
         my @field_constraints = grep { 
             my $constraint = $_;
             any {$_->name eq $field->name } $constraint->fields;
         } @constraints;
 
-        $self->dispatch($field->data_type);
-        # my $method = _normalize_data_type($field->data_type);
-        # my $cols = $self->$method($field, \@field_constraints, $others);
-        # $records->{$field->name} = $cols;
+        my $values = $self->dispatch($field->data_type, $field, $n, \@field_constraints);
+        $recordset->add_cols($field, $values);
     }
+    return $recordset;
 }
 
 sub dispatch {
-    my ($self, $data_type) = @_;
+    my ($self, $data_type, $field, $n, $constraints) = @_;
     my $class = ref $self;
     my $code = $class->dispatch_table->{$data_type};
-    $code->();
+    return $code->($self, $field, $n, $constraints, $self->{recordsets});
+}
+
+sub redispatch {
+    my ($self, $new_data_type, $field, $n, $constraints) = @_;
+    return $self->dispatch($new_data_type, $field, $n, $constraints);
 }
 
 ## DSL

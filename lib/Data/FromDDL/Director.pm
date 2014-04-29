@@ -4,6 +4,7 @@ use warnings;
 use List::MoreUtils qw(any);
 use Data::FromDDL::RecordSet;
 use Data::Dumper;
+use Carp qw(croak);
 
 sub new {
     my ($class, $args) = @_;
@@ -19,6 +20,8 @@ sub new {
 sub generate {
     my ($self, $n) = @_;
     my @tables = $self->_get_right_order_tables;
+    croak("No tables found: You might not specify all tables.")
+        unless @tables;
     # print $_->name . "\n" for @tables;
 
     my @recordsets;

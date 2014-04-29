@@ -28,7 +28,8 @@ sub generate {
         exclude => $self->{exclude},
     });
     my @recordsets = $director->generate($n);
-    # print $out_fh $_->to_sql for @recordsets;
+    my $sql = join "\n\n", map { $_->to_sql } @recordsets;
+    print $out_fh $sql;
 }
 
 
