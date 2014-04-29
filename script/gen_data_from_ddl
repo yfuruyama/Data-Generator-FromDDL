@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use Data::Dumper;
 use Data::Dummy::FromDDL;
 use Data::Dummy::FromDDL::Util qw(
     normalize_parser_str
@@ -17,7 +18,7 @@ my $help = 0;
 my $include = '';
 my $exclude = '';
 GetOptions(
-    "num|n=i" => \$n,
+    "num|n=s" => \$n,
     "help|h" => \$help,
     "out|o=s" => \$out,
     "parser|p=s" => \$parser,
@@ -30,11 +31,25 @@ pod2usage(1)
 pod2usage("Can't specify both of --include and --exclude options")
     if $include && $exclude;
 
-# テーブルごとに異なる行数指定できるようにしたい
-# --num=20 => 全てのテーブル20行
-# --num=users:10,recipes:50,100 => usersテーブルは10行、recipesテーブルは50行、他は100行
-sub parser_num_option {
-    my $num_str = shift;
+sub parse_num_option {
+    # $num_option_str is like 'users:20,bugs:30,100'
+    my $num_option_str = shift;
+    my @nums = split ',', $num_option_str;
+
+    my $parsed = {
+        all => undef,
+        tables => {},
+    };
+    for (@nums) {
+        my ($table, $n) = split ':', $_;
+        if ($n) {
+            $parsed->{tables}{$table} = $n;
+        } else {
+            # $table contains number
+            $parsed->{all} = $table;
+        }
+    }
+    return $parsed;
 }
 
 my $ddl = do {
@@ -73,7 +88,8 @@ my $d = Data::Dummy::FromDDL->new(
     include => \@include,
     exclude => \@exclude,
 );
-$d->generate($n);
+
+$d->generate(parse_num_option($n));
 
 __END__
 
@@ -101,5 +117,12 @@ Print help message and exits.
 =item B<-n | --num>
 
 Generate B<num> records.
+
+You can specify number of records of each table. 
+
+Example:
+--num=20 => 20 records are generated in all tables.
+--num=users:10,blogs:50,100 => 10 records for users table, 50 records for blogs table, and 100 records for other tables.
+
 
 =cut

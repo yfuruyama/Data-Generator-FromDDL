@@ -14,6 +14,10 @@ sub normalize_parser_str {
         return 'MySQL';
     } elsif ($parser =~ /sqlite/i) {
         return 'SQLite';
+    } elsif ($parser =~ /oracle/i) {
+        return 'Oracle';
+    } elsif ($parser =~ /postgresql/i) {
+        return 'PostgreSQL';
     }
 
     return $parser;
