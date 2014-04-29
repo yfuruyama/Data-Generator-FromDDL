@@ -6,7 +6,8 @@ use List::Util qw(first);
 use Class::Accessor::Lite (
     rw => [qw(table n cols)],
 );
-use JSON qw(encode_json);
+use JSON ();
+use YAML::Tiny ();
 use Data::FromDDL::Util qw(need_quote_data_type);
 
 sub new {
@@ -37,14 +38,14 @@ sub get_values {
 }
 
 sub _construct_rows {
-    my $self = shift;
+    my ($self, $with_quote) = shift;
     my $cols = $self->cols;
     my @rows;
     for my $i (0..($self->n)-1) {
         my $row = [map { 
             my $field = $_->{field};
             my $values = $_->{values};
-            if (need_quote_data_type($field->data_type)) {
+            if ($with_quote && need_quote_data_type($field->data_type)) {
                 "'" . $values->[$i] . "'";
             } else {
                 $values->[$i];
@@ -56,11 +57,31 @@ sub _construct_rows {
     return @rows;
 }
 
+sub _construct_data {
+    my $self = shift;
+    my $cols = $self->cols;
+    my @fields = map { $_->{field} } @$cols;
+    my @rows = $self->_construct_rows;
+
+    my $data = {
+        table => $self->table->name,
+        values => [],
+    };
+    for my $row (@rows) {
+        my $record = {};
+        for (0..$#fields) {
+            $record->{$fields[$_]->name} = $row->[$_];
+        }
+        push $data->{values}, $record;
+    }
+    return $data;
+}
+
 sub to_sql {
     my ($self, $pretty) = @_;
     my $cols = $self->cols;
     my @fields = map { $_->{field} } @$cols;
-    my @rows = $self->_construct_rows;
+    my @rows = $self->_construct_rows(1);
 
     my $format;
     my $record_sep;
@@ -83,13 +104,18 @@ EOL
 
 sub to_json {
     my ($self, $pretty) = @_;
-    my $cols = $self->cols;
-    my @fields = map { $_->{field} } @$cols;
-    my @rows = $self->_construct_rows;
-    # my $
+    my $data = $self->_construct_data;
+    if ($pretty) {
+        return JSON->new->pretty->encode($data);
+    } else {
+        return JSON->new->encode($data);
+    }
 }
 
 sub to_yaml {
+    my ($self) = @_;
+    my $data = $self->_construct_data;
+    return YAML::Tiny::Dump($data);
 }
 
 1;

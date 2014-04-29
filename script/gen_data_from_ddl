@@ -18,11 +18,13 @@ my $help = 0;
 my $include = '';
 my $exclude = '';
 my $pretty;
+my $format;
 GetOptions(
     "num|n=s" => \$n,
     "help|h" => \$help,
     "out|o=s" => \$out,
     "parser|p=s" => \$parser,
+    "format|f=s" => \$format,
     "include|i=s" => \$include,
     "exclude|e=s" => \$exclude,
     "pretty" => \$pretty,
@@ -89,7 +91,7 @@ my $generator = Data::FromDDL->new(
     include => \@include,
     exclude => \@exclude,
 );
-$generator->generate($n, $out_fh, $pretty);
+$generator->generate($n, $out_fh, $format, $pretty);
 
 __END__
 
