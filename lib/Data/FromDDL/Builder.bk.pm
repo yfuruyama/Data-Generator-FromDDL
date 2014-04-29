@@ -174,14 +174,4 @@ sub varchar {
     return [map { sprintf $format, $_ } (1..$self->n)];
 }
 
-#TODO
-#timestamp
-#mediumint 3byte
-#bigint 8byte
-#float
-#double
-#tinytext
-#text
-#mediumtext
-
 1;

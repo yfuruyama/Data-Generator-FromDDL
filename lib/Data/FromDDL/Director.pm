@@ -22,7 +22,6 @@ sub generate {
     my @tables = $self->_get_right_order_tables;
     croak("No tables found: You might not specify all tables.")
         unless @tables;
-    # print $_->name . "\n" for @tables;
 
     my @recordsets;
     for my $table (@tables) {

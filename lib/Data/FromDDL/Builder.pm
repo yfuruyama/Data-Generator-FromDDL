@@ -2,9 +2,13 @@ package Data::FromDDL::Builder;
 use strict;
 use warnings;
 use Data::Dumper;
+use Carp qw(croak);
 use List::Util qw(first);
 use List::MoreUtils qw(any);
 use Class::Data::Inheritable;
+use Class::Accessor::Lite (
+    rw => [qw(table recordsets)],
+);
 use Data::FromDDL::RecordSet;
 use base qw(Exporter Class::Data::Inheritable);
 our @EXPORT = qw(datatype);
@@ -18,7 +22,7 @@ sub new {
 
 sub generate {
     my ($self, $n) = @_;
-    my $table = $self->{table};
+    my $table = $self->table;
     my @constraints = $table->get_constraints;
     my $recordset = Data::FromDDL::RecordSet->new($table, $n);
     for my $field ($table->get_fields) {
@@ -27,7 +31,8 @@ sub generate {
             any {$_->name eq $field->name } $constraint->fields;
         } @constraints;
 
-        my $values = $self->dispatch($field->data_type, $field, $n, \@field_constraints);
+        my $data_type = lc($field->data_type);
+        my $values = $self->dispatch($data_type, $field, $n, \@field_constraints);
         $recordset->add_cols($field, $values);
     }
     return $recordset;
@@ -37,7 +42,9 @@ sub dispatch {
     my ($self, $data_type, $field, $n, $constraints) = @_;
     my $class = ref $self;
     my $code = $class->dispatch_table->{$data_type};
-    return $code->($self, $field, $n, $constraints, $self->{recordsets});
+    croak("Unsupported data type: $data_type")
+        unless $code;
+    return $code->($self, $field, $n, $constraints, $self->recordsets);
 }
 
 sub redispatch {
@@ -52,7 +59,9 @@ sub datatype($&) {
 
     # update dispatch table
     my $dispatch_table = $class->dispatch_table;
-    $dispatch_table->{$data_type} = $code;
+    for (split /,\s*/, $data_type) {
+        $dispatch_table->{$_} = $code;
+    }
     $class->dispatch_table($dispatch_table);
 }
 

@@ -6,7 +6,8 @@ use base 'Exporter';
 
 our @EXPORT_OK = qw(
     normalize_parser_str
-    is_string_data_type
+    need_quote_data_type
+    get_numeric_type_byte
 );
 
 sub normalize_parser_str {
@@ -24,16 +25,34 @@ sub normalize_parser_str {
     return $parser;
 }
 
-sub is_string_data_type {
-    my $data_type = lc(shift);
-    if ($data_type eq 'char' or 
-        $data_type eq 'varchar' or
-        $data_type eq 'tinytext' or
-        $data_type eq 'text' or
-        $data_type eq 'mediumtext') {
+sub need_quote_data_type {
+    my $type = lc(shift);
+    if ($type eq 'char' or 
+        $type eq 'varchar' or
+        $type eq 'tinytext' or
+        $type eq 'text' or
+        $type eq 'mediumtext' or
+        $type eq 'timestamp') {
         return 1;
     } else {
         return undef;
+    }
+}
+
+sub get_numeric_type_byte {
+    my $type = lc(shift);
+    if ($type eq 'bigint') {
+        return 8;
+    } elsif ($type eq 'int' or $type eq 'integer') {
+        return 4;
+    } elsif ($type eq 'mediumint') {
+        return 3;
+    } elsif ($type eq 'smallint') {
+        return 2;
+    } elsif ($type eq 'tinyint') {
+        return 1;
+    } elsif ($type eq 'timestamp') {
+        return 4;
     }
 }
 

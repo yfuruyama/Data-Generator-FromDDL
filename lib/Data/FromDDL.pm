@@ -29,7 +29,7 @@ sub generate {
     });
     my @recordsets = $director->generate($n);
     my $sql = join "\n\n", map { $_->to_sql } @recordsets;
-    print $out_fh $sql;
+    print $out_fh $sql . "\n";
 }
 
 

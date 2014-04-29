@@ -1,8 +1,13 @@
 package Data::FromDDL::Builder::SerialOrder;
 use strict;
 use warnings;
+use Data::Dumper;
+use List::Util qw(first);
+use Carp qw(croak);
+use POSIX qw(strftime);
 use Data::FromDDL::Builder;
 use Data::FromDDL::RecordSet;
+use Data::FromDDL::Util qw(get_numeric_type_byte);
 our @ISA = qw(Data::FromDDL::Builder);
 
 sub new {
@@ -10,23 +15,16 @@ sub new {
     bless $args, $class;
 };
 
-datatype 'varchar' => sub {
-    my ($builder, $field, $n, $constraints, $recordsets) = @_;
-    return [(1..$n)];
-};
-
-datatype 'char' => sub {
-    my ($builder, $field, $n, $constraints, $recordsets) = @_;
-    return [(1..$n)];
-};
-
-datatype 'int' => sub { shift->redispatch('integer', @_); };
+# TODO : support these types
+# - float
+# - double
+# - enum
 
 datatype 'integer' => sub {
-    # TODO
-    # unsigned
     my ($builder, $field, $n, $constraints, $recordsets) = @_;
-    
+    my $byte = get_numeric_type_byte($field->data_type);
+    my $is_unsigned = $field->extra->{unsigned} || 0;
+
     if (@$constraints) {
         my $constraint;
         if (scalar(@$constraints) >= 2) {
@@ -43,16 +41,15 @@ datatype 'integer' => sub {
             my $ref_table_name = $constraint->reference_table;
             my @ref_fields = $constraint->reference_fields;
             my $ref_field = $ref_fields[0];
-            my $g = first { $_->table->name eq $ref_table_name } @$recordsets;
-            die('not found')
-                unless defined($g);
+            my $recordset = first { $_->table->name eq $ref_table_name } @$recordsets;
+            croak('not found')
+                unless defined($recordset);
 
-            my $records = $g->records;
-            die ("field not found: $ref_field")
-                unless exists $records->{$ref_field};
-            my $candidates = $records->{$ref_field};
-            my $c_size = scalar(@$candidates);
-            return [map { $candidates->[int(rand($c_size))] } (1..$n)];
+            my @values = $recordset->get_values($ref_field);
+            croak("field not found: $ref_field")
+                unless @values;
+            my $v_size = scalar(@values);
+            return [map { $values[int(rand($v_size))] } (1..$n)];
         } elsif ($c_type eq 'PRIMARY KEY' or $c_type eq 'UNIQUE KEY' or $field->is_auto_increment) {
             return [1..$n];
         }
@@ -62,23 +59,50 @@ datatype 'integer' => sub {
         }
     }
 
-    return [map { int(rand(2 ** 32)) } (1..$n)];
-    # if ($byte) {
-        # return [map { int(rand(2 ** ($byte * 8))) } (1..$self->n)];
-    # } else {
-        # return [map { int(rand(2 ** 32)) } (1..$self->n)];
-    # }
+    if ($is_unsigned) {
+        return [map { int(rand(2 ** ($byte * 8))) } (1..$n)];
+    } else {
+        return [map {
+            [1, -1]->[int(rand(2))] * int(rand(2 ** ($byte * 8 - 1)))
+        } (1..$n)];
+    }
 };
 
-#TODO
-#timestamp
-#mediumint 3byte
-#bigint 8byte
-#float
-#double
-#tinytext
-#text
-#mediumtext
-#enum
+datatype 'bigint' => sub {
+    return shift->redispatch('integer', @_);
+};
+
+datatype 'int' => sub {
+    return shift->redispatch('integer', @_);
+};
+
+datatype 'mediumint' => sub {
+    return shift->redispatch('integer', @_);
+};
+
+datatype 'smallint' => sub {
+    return shift->redispatch('integer', @_);
+};
+
+datatype 'tinyint' => sub {
+    return shift->redispatch('integer', @_);
+};
+
+datatype 'timestamp' => sub {
+    my $values = shift->redispatch('integer', @_);
+    return [map { 
+        strftime '%Y-%m-%d %H:%M:%S', localtime(abs($_))
+    } @$values];
+};
+
+datatype 'char, varchar, tinytext, text, mediumtext' => sub {
+    my ($builder, $field, $n, $constraints, $recordsets) = @_;
+    my $field_name = $field->name;
+    my $field_size = $field->size;
+
+    my $record_prefix = substr $field_name, 0, $field_size - length($n);
+    my $format = $record_prefix . "%0" . length($n) . "d";
+    return [map { sprintf $format, $_ } (1..$n)];
+};
 
 1;
