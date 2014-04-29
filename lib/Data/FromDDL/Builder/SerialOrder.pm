@@ -15,48 +15,33 @@ sub new {
     bless $args, $class;
 };
 
-# TODO : support these types
+# TODO : support these data types
 # - float
 # - double
 # - enum
 
 datatype 'integer' => sub {
-    my ($builder, $field, $n, $constraints, $recordsets) = @_;
+    my ($builder, $field, $n, $recordsets) = @_;
     my $byte = get_numeric_type_byte($field->data_type);
     my $is_unsigned = $field->extra->{unsigned} || 0;
 
-    if (@$constraints) {
-        my $constraint;
-        if (scalar(@$constraints) >= 2) {
-            # FOREIGN KEY 優先
-            $constraint = first { uc($_->type) eq 'FOREIGN KEY' } @$constraints;
-            unless ($constraint) {
-                $constraint = $constraints->[0];
-            }
-        } else {
-            $constraint = $constraints->[0];
-        }
-        my $c_type = uc($constraint->type);
-        if ($c_type eq 'FOREIGN KEY') {
-            my $ref_table_name = $constraint->reference_table;
-            my @ref_fields = $constraint->reference_fields;
-            my $ref_field = $ref_fields[0];
-            my $recordset = first { $_->table->name eq $ref_table_name } @$recordsets;
-            croak('not found')
-                unless defined($recordset);
+    if ($field->is_foreign_key) {
+        my $constraint = $field->foreign_key_reference;
+        my $ref_table = $constraint->reference_table;
+        my $recordset = first { $_->table->name eq $ref_table } @$recordsets;
+        croak("Table not found: $ref_table")
+            unless defined($recordset);
 
-            my @values = $recordset->get_values($ref_field);
-            croak("field not found: $ref_field")
-                unless @values;
-            my $v_size = scalar(@values);
-            return [map { $values[int(rand($v_size))] } (1..$n)];
-        } elsif ($c_type eq 'PRIMARY KEY' or $c_type eq 'UNIQUE KEY' or $field->is_auto_increment) {
-            return [1..$n];
-        }
-    } else {
-        if ($field->is_auto_increment) {
-            return [1..$n];
-        }
+        my $ref_field = $constraint->reference_fields->[0];
+        my @values = $recordset->get_values($ref_field);
+        croak("Field not found: $ref_field in table: $ref_table")
+            unless @values;
+        my $v_size = scalar(@values);
+        return [map { $values[int(rand($v_size))] } (1..$n)];
+    } elsif ($field->is_primary_key or
+             $field->is_unique or
+             $field->is_auto_increment) {
+        return [1..$n];
     }
 
     if ($is_unsigned) {
@@ -96,7 +81,7 @@ datatype 'timestamp' => sub {
 };
 
 datatype 'char, varchar, tinytext, text, mediumtext' => sub {
-    my ($builder, $field, $n, $constraints, $recordsets) = @_;
+    my ($builder, $field, $n, $recordsets) = @_;
     my $field_name = $field->name;
     my $field_size = $field->size;
 

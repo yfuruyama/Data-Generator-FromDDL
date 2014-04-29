@@ -38,7 +38,7 @@ sub get_values {
 }
 
 sub _construct_rows {
-    my ($self, $with_quote) = shift;
+    my ($self, $with_quote) = @_;
     my $cols = $self->cols;
     my @rows;
     for my $i (0..($self->n)-1) {

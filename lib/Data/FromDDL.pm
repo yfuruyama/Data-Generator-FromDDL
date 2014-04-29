@@ -62,7 +62,7 @@ Data::FromDDL is ...
 
 How this module satisfies some database constraints.
 
-Composite PRIMARY KEY and composite UNIQUE KEY is not currently supported.
+Composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not currently supported.
 
 =item PRIMARY KEY constraint
 

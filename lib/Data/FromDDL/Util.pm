@@ -52,6 +52,7 @@ sub get_numeric_type_byte {
     } elsif ($type eq 'tinyint') {
         return 1;
     } elsif ($type eq 'timestamp') {
+        # UNIX timestamps are signed integer
         return 4;
     }
 }
