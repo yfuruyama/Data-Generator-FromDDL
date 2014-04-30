@@ -31,7 +31,8 @@ sub need_quote_data_type {
         $type eq 'tinytext' or
         $type eq 'text' or
         $type eq 'mediumtext' or
-        $type eq 'timestamp') {
+        $type eq 'timestamp' or
+        $type eq 'enum') {
         return 1;
     } else {
         return undef;

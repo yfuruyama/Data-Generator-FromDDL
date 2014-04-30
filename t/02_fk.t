@@ -25,8 +25,8 @@ my $output;
 open my $out_fh, '>', \$output;
 $generator->generate(3, $out_fh);
 
-my $expect = qr/INSERT INTO `users` \(`id`\) VALUES \(1\),\(2\),\(3\);
-INSERT INTO `blogs` \(`id`,`author_id`\) VALUES \(1,(\d)\),\(2,(\d)\),\(3,(\d)\);
+my $expect = qr/\QINSERT INTO `users` (`id`) VALUES (1),(2),(3);
+INSERT INTO `blogs` (`id`,`author_id`) VALUES \E\(1,(\d)\),\(2,(\d)\),\(3,(\d)\);
 /;
 if ($output =~ $expect) {
     ok $1 >= 1 && $1 <=3;
