@@ -1,12 +1,12 @@
 # NAME
 
-Data::FromDDL - Dummy data generator from DDL statements
+DataGen::FromDDL - Dummy data generator from DDL statements
 
 # SYNOPSIS
 
-    use Data::FromDDL;
+    use DataGen::FromDDL;
 
-    my $generator = Data::FromDDL->new({
+    my $generator = DataGen::FromDDL->new({
         ddl => 'CREATE TABLE users (....);',
         parser => 'mysql',
     });
@@ -14,7 +14,7 @@ Data::FromDDL - Dummy data generator from DDL statements
 
 # DESCRIPTION
 
-Data::FromDDL is dummy data generator intended to easily prepare dummy records for RDBMS.
+DataGen::FromDDL is dummy data generator intended to easily prepare dummy records for RDBMS.
 This module takes care of some constraints specific to RDBMS and generates records in the right order.
 
 Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
@@ -23,7 +23,7 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
 - **new**
 
-        Data::FromDDL->new(%options);
+        DataGen::FromDDL->new(%options);
 
     Create a new instance.
     Possible options are:
@@ -36,7 +36,7 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
         Parser for ddl. Choices are 'MySQL', 'SQLite', 'Oracle', or 'PostgreSQL'.
 
-    - builder\_class => $builder\_class // 'Data::FromDDL::Builder::SerialOrder'
+    - builder\_class => $builder\_class // 'DataGen::FromDDL::Builder::SerialOrder'
 
         Builder class.
 

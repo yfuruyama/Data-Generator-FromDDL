@@ -12,7 +12,7 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
-   "name" : "Data-FromDDL",
+   "name" : "DataGen-FromDDL",
    "no_index" : {
       "directory" : [
          "t",
@@ -44,6 +44,15 @@
       },
       "runtime" : {
          "requires" : {
+            "Class::Accessor::Lite" : "0",
+            "Class::Data::Inheritable" : "0",
+            "Exporter" : "0",
+            "Getopt::Long" : "0",
+            "JSON" : "0",
+            "List::MoreUtils" : "0",
+            "List::Util" : "0",
+            "SQL::Translator" : "0",
+            "YAML::Tiny" : "0",
             "perl" : "5.008005"
          }
       },

@@ -1,4 +1,4 @@
-package Data::FromDDL;
+package DataGen::FromDDL;
 use 5.008005;
 use strict;
 use warnings;
@@ -8,15 +8,15 @@ use Class::Accessor::Lite (
     rw => [qw(builder_class parser ddl include exclude)],
 );
 
-use Data::FromDDL::Director;
+use DataGen::FromDDL::Director;
 
 our $VERSION = "0.01";
 
 sub generate {
     my ($self, $num, $out_fh, $format, $pretty) = @_;
     my $builder_class = $self->builder_class
-        || 'Data::FromDDL::Builder::SerialOrder';
-    my $director = Data::FromDDL::Director->new({
+        || 'DataGen::FromDDL::Builder::SerialOrder';
+    my $director = DataGen::FromDDL::Director->new({
         builder_class => $builder_class,
         parser => $self->parser || 'mysql',
         ddl => $self->ddl,
@@ -49,13 +49,13 @@ __END__
 
 =head1 NAME
 
-Data::FromDDL - Dummy data generator from DDL statements
+DataGen::FromDDL - Dummy data generator from DDL statements
 
 =head1 SYNOPSIS
 
-    use Data::FromDDL;
+    use DataGen::FromDDL;
 
-    my $generator = Data::FromDDL->new({
+    my $generator = DataGen::FromDDL->new({
         ddl => 'CREATE TABLE users (....);',
         parser => 'mysql',
     });
@@ -63,7 +63,7 @@ Data::FromDDL - Dummy data generator from DDL statements
 
 =head1 DESCRIPTION
 
-Data::FromDDL is dummy data generator intended to easily prepare dummy records for RDBMS.
+DataGen::FromDDL is dummy data generator intended to easily prepare dummy records for RDBMS.
 This module takes care of some constraints specific to RDBMS and generates records in the right order.
 
 Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
@@ -74,7 +74,7 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
 =item B<new>
 
-    Data::FromDDL->new(%options);
+    DataGen::FromDDL->new(%options);
 
 Create a new instance.
 Possible options are:
@@ -89,7 +89,7 @@ Description of DDL. This option is required.
 
 Parser for ddl. Choices are 'MySQL', 'SQLite', 'Oracle', or 'PostgreSQL'.
 
-=item builder_class => $builder_class // 'Data::FromDDL::Builder::SerialOrder'
+=item builder_class => $builder_class // 'DataGen::FromDDL::Builder::SerialOrder'
 
 Builder class.
 

@@ -1,8 +1,8 @@
 use strict;
 use Test::More;
-use Data::FromDDL;
+use DataGen::FromDDL;
 
-my $generator = Data::FromDDL->new({
+my $generator = DataGen::FromDDL->new({
     ddl => 'CREATE TABLE users (`id` int NOT NULL AUTO_INCREMENT);',
     parser => 'mysql',
 });

@@ -1,4 +1,4 @@
-package Data::FromDDL::Director;
+package DataGen::FromDDL::Director;
 use strict;
 use warnings;
 use Carp qw(croak);
@@ -7,8 +7,8 @@ use Class::Accessor::Lite (
     rw => [qw(builder_class parser ddl include exclude)],
 );
 
-use Data::FromDDL::Util qw(normalize_parser_str);
-use Data::FromDDL::RecordSet;
+use DataGen::FromDDL::Util qw(normalize_parser_str);
+use DataGen::FromDDL::RecordSet;
 
 sub new {
     my ($class, $args) = @_;

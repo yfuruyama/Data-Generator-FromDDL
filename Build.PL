@@ -23,8 +23,8 @@ my %args = (
         'Module::Build' => 0.38,
     },
 
-    name            => 'Data-FromDDL',
-    module_name     => 'Data::FromDDL',
+    name            => 'DataGen-FromDDL',
+    module_name     => 'DataGen::FromDDL',
     allow_pureperl => 0,
 
     script_files => [glob('script/*'), glob('bin/*')],
