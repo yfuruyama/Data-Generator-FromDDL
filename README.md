@@ -17,6 +17,27 @@ Data::Generator::FromDDL - Dummy data generator from DDL statements
 Data::Generator::FromDDL is dummy data generator intended to easily prepare dummy records for RDBMS.
 This module takes care of some constraints specific to RDBMS and generates records in the right order.
 
+Supported constraints are
+
+    - PRIMARY KEY
+    - UNIQUE KEY
+    - FOREIGN KEY
+
+Supported data types are
+
+    - BIGINT
+    - INT (INTEGER)
+    - MEDIUMINT
+    - SMALLINT
+    - TINYINT
+    - TIMESTAMP
+    - CHAR
+    - VARCHAR
+    - TINYTEXT
+    - TEXT
+    - MEDIUMTEXT
+    - ENUM
+
 Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
 # METHODS

@@ -65,13 +65,13 @@
    "release_status" : "unstable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/addsict/Data-FromDDL/issues"
+         "web" : "https://github.com/addsict/Data-Generator-FromDDL/issues"
       },
-      "homepage" : "https://github.com/addsict/Data-FromDDL",
+      "homepage" : "https://github.com/addsict/Data-Generator-FromDDL",
       "repository" : {
          "type" : "git",
-         "url" : "git://github.com/addsict/Data-FromDDL.git",
-         "web" : "https://github.com/addsict/Data-FromDDL"
+         "url" : "git://github.com/addsict/Data-Generator-FromDDL.git",
+         "web" : "https://github.com/addsict/Data-Generator-FromDDL"
       }
    },
    "version" : "0.01"
