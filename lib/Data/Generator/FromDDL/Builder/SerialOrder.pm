@@ -1,14 +1,14 @@
-package DataGen::FromDDL::Builder::SerialOrder;
+package Data::Generator::FromDDL::Builder::SerialOrder;
 use strict;
 use warnings;
 use List::Util qw(first);
 use Carp qw(croak);
 use POSIX qw(strftime);
 
-use DataGen::FromDDL::Builder;
-use DataGen::FromDDL::RecordSet;
-use DataGen::FromDDL::Util qw(get_numeric_type_byte);
-our @ISA = qw(DataGen::FromDDL::Builder);
+use Data::Generator::FromDDL::Builder;
+use Data::Generator::FromDDL::RecordSet;
+use Data::Generator::FromDDL::Util qw(get_numeric_type_byte);
+our @ISA = qw(Data::Generator::FromDDL::Builder);
 
 
 datatype 'integer' => sub {

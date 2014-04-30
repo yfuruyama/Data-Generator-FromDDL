@@ -1,6 +1,6 @@
 use strict;
 use Test::More;
-use DataGen::FromDDL;
+use Data::Generator::FromDDL;
 
 my $ddl = <<EOL;
 CREATE TABLE blogs (
@@ -16,7 +16,7 @@ CREATE TABLE users (
 );
 EOL
 
-my $generator = DataGen::FromDDL->new({
+my $generator = Data::Generator::FromDDL->new({
     ddl => $ddl,
     parser => 'mysql',
 });

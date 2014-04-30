@@ -5,8 +5,8 @@ use warnings;
 use Pod::Usage;
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
 
-use DataGen::FromDDL;
-use DataGen::FromDDL::Util;
+use Data::Generator::FromDDL;
+use Data::Generator::FromDDL::Util;
 
 sub parse_num_option {
     # $num_option_str is like 'users:20,bugs:30,100'
@@ -94,7 +94,7 @@ sub main {
     my @exclude = split ',', $exclude;
     my $num = parse_num_option($n);
 
-    my $generator = DataGen::FromDDL->new({
+    my $generator = Data::Generator::FromDDL->new({
         ddl => $ddl,
         parser => $parser,
         include => \@include,

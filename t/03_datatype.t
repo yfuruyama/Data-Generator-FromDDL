@@ -1,10 +1,10 @@
 use strict;
 use Test::More;
-use DataGen::FromDDL;
+use Data::Generator::FromDDL;
 
 sub _generate {
     my $ddl = shift;
-    my $generator = DataGen::FromDDL->new({ ddl => $ddl });
+    my $generator = Data::Generator::FromDDL->new({ ddl => $ddl });
     open my $out_fh, '>', \my $output;
     $generator->generate(1, $out_fh);
     return $output;

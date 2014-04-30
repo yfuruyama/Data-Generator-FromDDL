@@ -1,4 +1,4 @@
-package DataGen::FromDDL;
+package Data::Generator::FromDDL;
 use 5.008005;
 use strict;
 use warnings;
@@ -8,15 +8,15 @@ use Class::Accessor::Lite (
     rw => [qw(builder_class parser ddl include exclude)],
 );
 
-use DataGen::FromDDL::Director;
+use Data::Generator::FromDDL::Director;
 
 our $VERSION = "0.01";
 
 sub generate {
     my ($self, $num, $out_fh, $format, $pretty) = @_;
     my $builder_class = $self->builder_class
-        || 'DataGen::FromDDL::Builder::SerialOrder';
-    my $director = DataGen::FromDDL::Director->new({
+        || 'Data::Generator::FromDDL::Builder::SerialOrder';
+    my $director = Data::Generator::FromDDL::Director->new({
         builder_class => $builder_class,
         parser => $self->parser || 'mysql',
         ddl => $self->ddl,
@@ -49,13 +49,13 @@ __END__
 
 =head1 NAME
 
-DataGen::FromDDL - Dummy data generator from DDL statements
+Data::Generator::FromDDL - Dummy data generator from DDL statements
 
 =head1 SYNOPSIS
 
-    use DataGen::FromDDL;
+    use Data::Generator::FromDDL;
 
-    my $generator = DataGen::FromDDL->new({
+    my $generator = Data::Generator::FromDDL->new({
         ddl => 'CREATE TABLE users (....);',
         parser => 'mysql',
     });
@@ -63,7 +63,7 @@ DataGen::FromDDL - Dummy data generator from DDL statements
 
 =head1 DESCRIPTION
 
-DataGen::FromDDL is dummy data generator intended to easily prepare dummy records for RDBMS.
+Data::Generator::FromDDL is dummy data generator intended to easily prepare dummy records for RDBMS.
 This module takes care of some constraints specific to RDBMS and generates records in the right order.
 
 Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
@@ -74,7 +74,7 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
 =item B<new>
 
-    DataGen::FromDDL->new(%options);
+    Data::Generator::FromDDL->new(%options);
 
 Create a new instance.
 Possible options are:
@@ -89,7 +89,7 @@ Description of DDL. This option is required.
 
 Parser for ddl. Choices are 'MySQL', 'SQLite', 'Oracle', or 'PostgreSQL'.
 
-=item builder_class => $builder_class // 'DataGen::FromDDL::Builder::SerialOrder'
+=item builder_class => $builder_class // 'Data::Generator::FromDDL::Builder::SerialOrder'
 
 Builder class.
 

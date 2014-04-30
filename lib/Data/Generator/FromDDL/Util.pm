@@ -1,4 +1,4 @@
-package DataGen::FromDDL::Util;
+package Data::Generator::FromDDL::Util;
 use strict;
 use warnings;
 use base qw(Exporter);

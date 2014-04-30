@@ -1,4 +1,4 @@
-package DataGen::FromDDL::RecordSet;
+package Data::Generator::FromDDL::RecordSet;
 use strict;
 use warnings;
 use List::Util qw(first);
@@ -8,7 +8,7 @@ use Class::Accessor::Lite (
     rw => [qw(table n cols)],
 );
 
-use DataGen::FromDDL::Util qw(need_quote_data_type);
+use Data::Generator::FromDDL::Util qw(need_quote_data_type);
 
 sub new {
     my ($class, $table, $n) = @_;

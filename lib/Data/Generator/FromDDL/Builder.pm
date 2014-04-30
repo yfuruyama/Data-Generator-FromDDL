@@ -1,4 +1,4 @@
-package DataGen::FromDDL::Builder;
+package Data::Generator::FromDDL::Builder;
 use strict;
 use warnings;
 use Carp qw(croak);
@@ -11,7 +11,7 @@ use Class::Accessor::Lite (
 );
 use base qw(Exporter Class::Data::Inheritable);
 
-use DataGen::FromDDL::RecordSet;
+use Data::Generator::FromDDL::RecordSet;
 
 our @EXPORT = qw(datatype);
 
@@ -21,7 +21,7 @@ __PACKAGE__->mk_classdata('dispatch_table', {});
 sub generate {
     my ($self, $n) = @_;
     my $table = $self->table;
-    my $recordset = DataGen::FromDDL::RecordSet->new($table, $n);
+    my $recordset = Data::Generator::FromDDL::RecordSet->new($table, $n);
     for my $field ($table->get_fields) {
         my $data_type = lc($field->data_type);
         my $values = $self->dispatch($data_type, $field, $n);
