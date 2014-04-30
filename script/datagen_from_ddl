@@ -48,7 +48,7 @@ sub read_ddl {
 
 sub main {
     my $help;
-    my $n;
+    my $n = 10;;
     my $parser = 'mysql';
     my $include = '';
     my $exclude = '';
@@ -122,7 +122,7 @@ datagen_from_ddl - dummy data generator from DDL statements
 
 =over 4
 
-=item B<-n|--num>
+=item B<-n|--num> (default: 10)
 
 Number of records generated.
 
