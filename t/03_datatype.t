@@ -12,7 +12,7 @@ sub _generate {
 
 subtest 'datatype bigint' => sub {
     my $ddl = 'CREATE TABLE t (`id` bigint);';
-    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \(-?[\d]+\);/;
+    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \((.+)\);/;
     my $got = _generate($ddl);
     if ($got =~ $expect) {
         ok $1 >= - 2**63 && $1 <= 2**63;
@@ -23,7 +23,7 @@ subtest 'datatype bigint' => sub {
 
 subtest 'datatype int(integer)' => sub {
     my $ddl = 'CREATE TABLE t (`id` int);';
-    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \(-?[\d]+\);/;
+    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \((-?[\d]+)\);/;
     my $got = _generate($ddl);
     if ($got =~ $expect) {
         ok $1 >= - 2**31 && $1 <= 2**31;
@@ -34,7 +34,7 @@ subtest 'datatype int(integer)' => sub {
 
 subtest 'datatype mediumint' => sub {
     my $ddl = 'CREATE TABLE t (`id` mediumint);';
-    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \(-?[\d]+\);/;
+    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \((-?[\d]+)\);/;
     my $got = _generate($ddl);
     if ($got =~ $expect) {
         ok $1 >= - 2**23 && $1 <= 2**23;
@@ -45,7 +45,7 @@ subtest 'datatype mediumint' => sub {
 
 subtest 'datatype smallint' => sub {
     my $ddl = 'CREATE TABLE t (`id` smallint);';
-    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \(-?[\d]+\);/;
+    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \((-?[\d]+)\);/;
     my $got = _generate($ddl);
     if ($got =~ $expect) {
         ok $1 >= - 2**15 && $1 <= 2**15;
@@ -56,7 +56,7 @@ subtest 'datatype smallint' => sub {
 
 subtest 'datatype tinyint' => sub {
     my $ddl = 'CREATE TABLE t (`id` tinyint);';
-    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \(-?[\d]+\);/;
+    my $expect = qr/INSERT INTO `t` \(`id`\) VALUES \((-?[\d]+)\);/;
     my $got = _generate($ddl);
     if ($got =~ $expect) {
         ok $1 >= - 2**7 && $1 <= 2**7;
