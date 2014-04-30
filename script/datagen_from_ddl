@@ -118,6 +118,12 @@ datagen_from_ddl - dummy data generator from DDL statements
     $ datagen_from_ddl [options] your_ddl.sql
     $ datagen_from_ddl --num=users:10,100 --include=users,blogs --format=sql --pretty your_ddl.sql
 
+=head1 DESCRIPTION
+
+B<datagen_from_ddl> generates dummy records and output them to STDOUT in default so that it can pipe to RDBMS client.
+
+    $ datagen_from_ddl --num=100 your_ddl.sql | mysql -u user -p DBNAME
+
 =head1 OPTIONS
 
 =over 4
