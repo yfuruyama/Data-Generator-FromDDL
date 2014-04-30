@@ -21,7 +21,7 @@ sub new {
 
 sub add_cols {
     my ($self, $field, $values) = @_;
-    push $self->{cols}, {
+    push @{$self->{cols}}, {
         field => $field,
         values => $values,
     };
@@ -72,7 +72,7 @@ sub _construct_data {
         for (0..$#fields) {
             $record->{$fields[$_]->name} = $row->[$_];
         }
-        push $data->{values}, $record;
+        push @{$data->{values}}, $record;
     }
     return $data;
 }
