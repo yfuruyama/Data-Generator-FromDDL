@@ -2,6 +2,13 @@ Revision history for Perl extension Data-Generator-FromDDL
 
 {{$NEXT}}
 
+0.02 2014-05-01T06:11:15Z
+
+    - Added '--bytes_per_sql' option to datagen_from_ddl(1)
+      - This option is releated to MySQL's 'max_allowed_packet' variable. For details, see datagen_from_ddl(1).
+
+    - Fixed bugs
+
 0.01 2014-04-30T04:51:32Z
 
     - original version

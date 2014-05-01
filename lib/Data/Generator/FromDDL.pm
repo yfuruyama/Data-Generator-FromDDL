@@ -10,7 +10,7 @@ use Class::Accessor::Lite (
 
 use Data::Generator::FromDDL::Director;
 
-our $VERSION = "0.01";
+our $VERSION = "0.02";
 
 sub generate {
     my ($self, $num, $out_fh, $format, $pretty, $bytes_per_sql) = @_;
