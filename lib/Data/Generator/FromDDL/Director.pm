@@ -68,6 +68,8 @@ sub _get_all_tables {
     my $self = shift;
     my $tr = SQL::Translator->new;
     $tr->parser(normalize_parser_str($self->parser))->($tr, $self->ddl);
+    die "\nParsing DDL failed. Please check a DDL syntax.\n"
+        unless $tr->schema->is_valid;
     return $tr->schema->get_tables;
 }
 

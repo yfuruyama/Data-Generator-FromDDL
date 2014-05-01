@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Pod::Usage;
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
+use Term::ANSIColor qw(colored);
 
 use Data::Generator::FromDDL;
 use Data::Generator::FromDDL::Util;
@@ -100,7 +101,14 @@ sub main {
         include => \@include,
         exclude => \@exclude,
     });
-    $generator->generate($num, $out_fh, $format, $pretty);
+
+    eval {
+        $generator->generate($num, $out_fh, $format, $pretty);
+    };
+    if ($@) {
+        print colored($@, 'red');
+        exit 1;
+    }
 }
 
 &main();

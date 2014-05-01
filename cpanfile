@@ -2,6 +2,7 @@ requires 'perl', '5.008001';
 
 requires 'Exporter';
 requires 'Getopt::Long';
+requires 'Term::ANSIColor';
 requires 'List::Util';
 requires 'List::MoreUtils';
 requires 'JSON';
