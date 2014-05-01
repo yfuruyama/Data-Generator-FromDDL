@@ -4,6 +4,7 @@ use warnings;
 use List::Util qw(first);
 use JSON ();
 use YAML::Tiny ();
+use bytes ();
 use Class::Accessor::Lite (
     rw => [qw(table n cols)],
 );
@@ -78,7 +79,7 @@ sub _construct_data {
 }
 
 sub to_sql {
-    my ($self, $pretty) = @_;
+    my ($self, $pretty, $bytes_per_sql) = @_;
     my $cols = $self->cols;
     my @fields = map { $_->{field} } @$cols;
     my @rows = $self->_construct_rows(1);
@@ -86,20 +87,41 @@ sub to_sql {
     my $format;
     my $record_sep;
     if ($pretty) {
-        $format = <<"EOL";
+        $format = qq(
 INSERT INTO
     `%s` (%s)
 VALUES
-    %s;
-EOL
+    );
         $record_sep = ",\n    ";
     } else {
-        $format = "INSERT INTO `%s` (%s) VALUES %s;";
+        $format = 'INSERT INTO `%s` (%s) VALUES ';
         $record_sep = ',';
     }
-    my $values = join $record_sep, map { "(" . join(',', @$_) . ")"; } @rows;
     my $columns = join ',', map { '`' . $_->name . '`' } @fields;
-    return sprintf $format, $self->table->name, $columns, $values;
+    my $insert_stmt = sprintf $format, $self->table->name, $columns;
+
+    my $sqls = '';
+    my @values;
+    my $sum_bytes = bytes::length($insert_stmt) + 1; # +1 is for trailing semicolon of sql
+    my $record_sep_len = bytes::length($record_sep);
+    for my $row (@rows) {
+        my $value = '(' . join(',', @$row) . ')';
+        my $v_len = bytes::length($value);
+        if ($sum_bytes + $v_len >= $bytes_per_sql) {
+            if (@values) {
+                $sqls .= $insert_stmt . (join $record_sep, @values) . ';';
+                $sum_bytes = bytes::length($insert_stmt) + 1;
+                @values = ();
+            }
+        }
+        push @values, $value;
+        $sum_bytes += $v_len + $record_sep_len;
+    }
+
+    if (@values) {
+        $sqls .= $insert_stmt . (join $record_sep, @values) . ';';
+    }
+    return $sqls;
 }
 
 sub to_json {

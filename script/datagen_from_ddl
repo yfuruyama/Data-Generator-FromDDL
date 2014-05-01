@@ -30,6 +30,19 @@ sub parse_num_option {
     return $parsed;
 }
 
+sub parse_bytes_per_sql_option {
+    my $bytes = shift;
+    if ($bytes =~ /(\d+)KB?/i) {
+        return $1 * 1024;
+    } elsif ($bytes =~ /(\d+)MB?/i) {
+        return $1 * 1024 * 1024;
+    } elsif ($bytes =~ /(\d+)GB?/i) {
+        return $1 * 1024 * 1024 * 1024;
+    } else {
+        return $bytes;
+    }
+}
+
 sub read_ddl {
     my $ddl_files = shift;
     local $/;
@@ -56,6 +69,7 @@ sub main {
     my $out;
     my $format = 'sql';
     my $pretty;
+    my $bytes_per_sql = 1024 * 1024; # 1MB
     GetOptions(
         "help|h" => \$help,
         "num|n=s" => \$n,
@@ -65,6 +79,7 @@ sub main {
         "out|o=s" => \$out,
         "format|f=s" => \$format,
         "pretty" => \$pretty,
+        "bytes_per_sql=s" => \$bytes_per_sql,
     ) or pod2usage(2);
 
     pod2usage({
@@ -94,6 +109,7 @@ sub main {
     my @include = split ',', $include;
     my @exclude = split ',', $exclude;
     my $num = parse_num_option($n);
+    $bytes_per_sql = parse_bytes_per_sql_option($bytes_per_sql);
 
     my $generator = Data::Generator::FromDDL->new({
         ddl => $ddl,
@@ -103,7 +119,7 @@ sub main {
     });
 
     eval {
-        $generator->generate($num, $out_fh, $format, $pretty);
+        $generator->generate($num, $out_fh, $format, $pretty, $bytes_per_sql);
     };
     if ($@) {
         print colored($@, 'red');
@@ -168,6 +184,14 @@ Output format. Choices are SQL, JSON, or YAML.
 =item B<--pretty>
 
 Print output prettily.
+
+=item B<--bytes_per_sql> (default: 1MB)
+
+The maximum bytes of bulk insert statement.
+
+This option is releated to the MySQL's B<'max_allowed_packet'> variable which stands for the maximum size of string. It's recommended to suit this option for your MySQL settings.
+
+cf. https://dev.mysql.com/doc/refman/5.1/en/server-system-variables.html#sysvar_max_allowed_packet
 
 =back
 

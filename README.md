@@ -70,7 +70,7 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
 - **generate** - Generate dummy records.
 
-        $generator->generate($num, $out_fh, $format, $pretty);
+        $generator->generate($num, $out_fh, $format, $pretty, $bytes_per_sql);
 
     Arguments are:
 
@@ -78,17 +78,25 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
         Number of records generated.
 
-    - $out\_fh
+    - $out\_fh (default: \*STDOUT)
 
         File handle object to which records are dumped.
 
-    - $format
+    - $format (default: 'sql')
 
         Output format. Choices are **'sql'**, **'json'**, **'yaml'**.
 
-    - $pretty
+    - $pretty (default: false)
 
         Boolean value whether to print output prettily.
+
+    - $bytes\_per\_sql (default: 1048576(1MB))
+
+        The maximum bytes of bulk insert statement.
+
+        This argument is releated to the MySQL's **'max\_allowed\_packet'** variable which stands for the maximum size of string. It's recommended to suit this argument for your MySQL settings.
+
+        cf. https://dev.mysql.com/doc/refman/5.1/en/server-system-variables.html#sysvar\_max\_allowed\_packet
 
 # COMMAND LINE INTERFACE
 
