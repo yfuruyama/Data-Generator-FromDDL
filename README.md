@@ -42,11 +42,10 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
 # METHODS
 
-- **new**
+- **new** - Create a new instance.
 
         Data::Generator::FromDDL->new(%options);
 
-    Create a new instance.
     Possible options are:
 
     - ddl => $ddl
@@ -69,11 +68,35 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
         Ignored tables.
 
-- **generate**
+- **generate** - Generate dummy records.
 
         $generator->generate($num, $out_fh, $format, $pretty);
 
-    Generate dummy data.
+    Arguments are:
+
+    - $num
+
+        Number of records generated.
+
+    - $out\_fh
+
+        File handle object to which records are dumped.
+
+    - $format
+
+        Output format. Choices are **'sql'**, **'json'**, **'yaml'**.
+
+    - $pretty
+
+        Boolean value whether to print output prettily.
+
+# COMMAND LINE INTERFACE
+
+The `datagen_from_ddl(1)` command is provided as an interface to this module.
+
+    $ datagen_from_ddl --num=100 --parser=mysql --pretty your_ddl.sql
+
+For more details, please see [datagen\_from\_ddl](https://metacpan.org/pod/datagen_from_ddl)(1).
 
 # LICENSE
 

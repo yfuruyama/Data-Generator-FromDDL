@@ -93,11 +93,10 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
 =over 4
 
-=item B<new>
+=item B<new> - Create a new instance.
 
     Data::Generator::FromDDL->new(%options);
 
-Create a new instance.
 Possible options are:
 
 =over 4
@@ -124,13 +123,41 @@ Ignored tables.
 
 =back
 
-=item B<generate>
+=item B<generate> - Generate dummy records.
 
     $generator->generate($num, $out_fh, $format, $pretty);
 
-Generate dummy data.
+Arguments are:
+
+=over 4
+
+=item $num
+
+Number of records generated.
+
+=item $out_fh
+
+File handle object to which records are dumped.
+
+=item $format
+
+Output format. Choices are B<'sql'>, B<'json'>, B<'yaml'>.
+
+=item $pretty
+
+Boolean value whether to print output prettily.
 
 =back
+
+=back
+
+=head1 COMMAND LINE INTERFACE
+
+The C<datagen_from_ddl(1)> command is provided as an interface to this module.
+
+    $ datagen_from_ddl --num=100 --parser=mysql --pretty your_ddl.sql
+
+For more details, please see L<datagen_from_ddl>(1).
 
 =head1 LICENSE
 
