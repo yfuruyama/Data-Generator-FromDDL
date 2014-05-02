@@ -22,7 +22,7 @@ datatype 'integer' => sub {
             unless defined($recordset);
 
         my $ref_field = $constraint->reference_fields->[0];
-        my @values = $recordset->get_values($ref_field);
+        my @values = $recordset->get_col_values($ref_field);
         croak("Field not found: $ref_field in table: $ref_table")
             unless @values;
         my $v_size = scalar(@values);

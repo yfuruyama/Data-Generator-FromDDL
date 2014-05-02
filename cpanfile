@@ -2,6 +2,8 @@ requires 'perl', '5.008001';
 
 requires 'Exporter';
 requires 'Getopt::Long';
+requires 'File::Temp';
+requires 'Storable';
 requires 'Term::ANSIColor';
 requires 'List::Util';
 requires 'List::MoreUtils';

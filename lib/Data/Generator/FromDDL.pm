@@ -9,6 +9,7 @@ use Class::Accessor::Lite (
 );
 
 use Data::Generator::FromDDL::Director;
+use Data::Generator::FromDDL::RecordSet;
 
 our $VERSION = "0.02";
 
@@ -28,22 +29,29 @@ sub generate {
     });
     my @recordsets = $director->generate($num);
 
-    my $output = do {
-        my $formatter;
-        if (lc($format) eq 'json') {
-            $formatter = 'to_json';
-        } elsif (lc($format) eq 'yaml') {
-            $formatter = 'to_yaml';
-        } else {
-            $formatter = 'to_sql';
-        }
-        join "\n", map {
-            $_->$formatter($pretty, $bytes_per_sql)
-        } @recordsets;
-    };
+    my $formatter;
+    if ($format =~ /json/i) {
+        $formatter = 'to_json';
+    } elsif ($format =~ /yaml/i) {
+        $formatter = 'to_yaml';
+    } else {
+        $formatter = 'to_sql';
+    }
 
     $out_fh ||= *STDOUT;
-    print $out_fh $output . "\n";
+    my $max_records = $Data::Generator::FromDDL::RecordSet::MAX_RECORDS_PER_STORAGE;
+    for my $recordset (@recordsets) {
+        my $n = $recordset->n;
+        my $offset = 0;
+        while ($n > 0) {
+            my $size = $n >= $max_records ? $max_records : $n;
+            print $out_fh $recordset->$formatter(
+                $size, $offset, $pretty, $bytes_per_sql
+            );
+            $offset += $size;
+            $n -= $size;
+        }
+    }
 }
 
 
