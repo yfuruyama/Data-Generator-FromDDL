@@ -4,6 +4,7 @@ requires 'Exporter';
 requires 'Getopt::Long';
 requires 'Term::ANSIColor';
 requires 'List::Util';
+requires 'Compress::Zlib';
 requires 'List::MoreUtils';
 requires 'JSON';
 requires 'YAML::Tiny';

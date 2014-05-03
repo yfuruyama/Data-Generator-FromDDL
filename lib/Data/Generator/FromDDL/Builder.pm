@@ -25,7 +25,7 @@ sub generate {
     for my $field ($table->get_fields) {
         my $data_type = lc($field->data_type);
         my $values = $self->dispatch($data_type, $field, $n);
-        $recordset->add_cols($field, $values);
+        $recordset->store_column_values($field, $values);
     }
     return $recordset;
 }

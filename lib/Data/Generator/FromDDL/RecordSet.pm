@@ -1,7 +1,11 @@
 package Data::Generator::FromDDL::RecordSet;
+# Data::Generator::FromDDL::RecordSet is columnar-oriented storage.
+# To output each generated record, it's needed to convert columns into rows.
+
 use strict;
 use warnings;
 use List::Util qw(first);
+use Compress::Zlib qw(compress uncompress);
 use JSON ();
 use YAML::Tiny ();
 use bytes ();
@@ -20,19 +24,22 @@ sub new {
     }, $class;
 }
 
-sub add_cols {
+sub store_column_values {
     my ($self, $field, $values) = @_;
+    my $joined_values = join ',', @$values;
+    my $compressed_values = compress($joined_values);
     push @{$self->{cols}}, {
         field => $field,
-        values => $values,
+        compressed_values => $compressed_values,
     };
 }
 
-sub get_values {
+sub get_column_values {
     my ($self, $field_name) = @_;
     my $col = first { $_->{field}->name eq $field_name } @{$self->cols};
     if ($col) {
-        return wantarray ? @{$col->{values}} : $col->{values};
+        my $uncompressed_values = uncompress($col->{compressed_values});
+        return split ',', $uncompressed_values;
     } else {
         return undef;
     }
@@ -42,10 +49,18 @@ sub _construct_rows {
     my ($self, $with_quote) = @_;
     my $cols = $self->cols;
     my @rows;
+
+    my %all_columns_values
+        = map {
+            my $field_name = $_->{field}->name;
+            my @column_values = $self->get_column_values($field_name);
+            $field_name => \@column_values
+        } @$cols;
+
     for my $i (0..($self->n)-1) {
         my $row = [map { 
             my $field = $_->{field};
-            my $values = $_->{values};
+            my $values = $all_columns_values{$field->name};
             if ($with_quote && need_quote_data_type($field->data_type)) {
                 "'" . $values->[$i] . "'";
             } else {
