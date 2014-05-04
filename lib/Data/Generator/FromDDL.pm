@@ -25,25 +25,9 @@ sub generate {
         ddl => $self->ddl,
         include => $self->include || [],
         exclude => $self->exclude || [],
+        out_fh => $out_fh,
     });
-    my @recordsets = $director->generate($num);
-
-    my $output = do {
-        my $formatter;
-        if (lc($format) eq 'json') {
-            $formatter = 'to_json';
-        } elsif (lc($format) eq 'yaml') {
-            $formatter = 'to_yaml';
-        } else {
-            $formatter = 'to_sql';
-        }
-        join "\n", map {
-            $_->$formatter($pretty, $bytes_per_sql)
-        } @recordsets;
-    };
-
-    $out_fh ||= *STDOUT;
-    print $out_fh $output . "\n";
+    $director->generate($num, $format, $pretty, $bytes_per_sql);
 }
 
 
@@ -146,7 +130,7 @@ File handle object to which records are dumped.
 
 =item $format (default: 'sql')
 
-Output format. Choices are B<'sql'>, B<'json'>, B<'yaml'>.
+Output format. Choices are B<'sql'> or B<'json'>.
 
 =item $pretty (default: false)
 
