@@ -12,8 +12,6 @@ use Class::Accessor::Lite (
     rw => [qw(table n columns)],
 );
 
-use Data::Generator::FromDDL::Util qw(need_quote_data_type);
-
 use constant RECORDS_PER_CHUNK => 100_000;
 
 sub new {
@@ -76,13 +74,13 @@ sub iterate_through_chunks(&) {
     my $table = $self->table;
     my @fields = map { $_->{field} } @{$self->columns};
     for my $chunk_no (0..($num_of_chunks - 1)) {
-        my @rows = $self->_construct_rows_with_chunk_no($chunk_no, 1);
+        my @rows = $self->_construct_rows_with_chunk_no($chunk_no);
         $code->($table, \@fields, \@rows);
     }
 }
 
 sub _construct_rows_with_chunk_no {
-    my ($self, $chunk_no, $with_quote) = @_;
+    my ($self, $chunk_no) = @_;
     my $n = $self->n;
     my $columns = $self->columns;
     my $chunk_size
@@ -90,29 +88,20 @@ sub _construct_rows_with_chunk_no {
         ? RECORDS_PER_CHUNK
         : $n % RECORDS_PER_CHUNK
         ;
-    my %all_columns_values
+    my @all_columns_values
         = map {
-            my $field_name = $_->{field}->name;
             my @values = _fetch_values_from_chunk($_->{chunks}->[$chunk_no]);
-            $field_name => {
-                need_quote => need_quote_data_type($_->{field}->data_type),
-                values => \@values,
-            };
+            \@values;
         } @$columns;
 
     my @rows;
-    for my $i (0..($chunk_size - 1)) {
-        my $row = [map {
-            my $field = $_->{field};
-            my $need_quote = $all_columns_values{$field->name}->{need_quote};
-            my $values = $all_columns_values{$field->name}->{values};
-            if ($with_quote && $need_quote) {
-                "'" . $values->[$i] . "'";
-            } else {
-                $values->[$i];
-            }
-        } @$columns];
-        push @rows, $row;
+    my $last_idx_of_columns = scalar(@$columns) - 1;
+    for my $row_idx (0..($chunk_size - 1)) {
+        my @row;
+        for my $col_idx (0..$last_idx_of_columns) {
+            $row[$col_idx] = $all_columns_values[$col_idx]->[$row_idx];
+        }
+        push @rows, \@row;
     }
 
     return @rows;

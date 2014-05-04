@@ -3,12 +3,12 @@ use strict;
 use warnings;
 use Carp qw(croak);
 use List::MoreUtils qw(any);
+use SQL::Translator;
 use Class::Accessor::Lite (
     rw => [qw(builder_class parser ddl include exclude)],
 );
 
 use Data::Generator::FromDDL::Util qw(normalize_parser_str);
-use Data::Generator::FromDDL::RecordSet;
 use Data::Generator::FromDDL::Formatter;
 
 sub new {

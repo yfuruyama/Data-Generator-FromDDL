@@ -2,7 +2,6 @@ package Data::Generator::FromDDL;
 use 5.008005;
 use strict;
 use warnings;
-use SQL::Translator;
 use Class::Accessor::Lite (
     new => 1,
     rw => [qw(builder_class parser ddl include exclude)],

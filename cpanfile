@@ -7,7 +7,6 @@ requires 'List::Util';
 requires 'Compress::Zlib';
 requires 'List::MoreUtils';
 requires 'JSON';
-requires 'YAML::Tiny';
 requires 'Class::Accessor::Lite';
 requires 'Class::Data::Inheritable';
 requires 'SQL::Translator';
@@ -15,4 +14,3 @@ requires 'SQL::Translator';
 on 'test' => sub {
     requires 'Test::More', '0.98';
 };
-

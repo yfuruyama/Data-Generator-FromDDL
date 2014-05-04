@@ -1,5 +1,4 @@
 package Data::Generator::FromDDL::Formatter;
-
 use strict;
 use warnings;
 use Carp qw(croak);
