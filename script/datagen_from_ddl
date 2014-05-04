@@ -179,7 +179,7 @@ Output file.
 
 =item B<-f|--format (default: SQL)>
 
-Output format. Choices are SQL, JSON, or YAML.
+Output format. Choices are SQL or JSON.
 
 =item B<--pretty>
 

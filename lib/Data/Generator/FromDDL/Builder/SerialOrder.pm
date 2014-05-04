@@ -22,25 +22,25 @@ datatype 'integer' => sub {
             unless defined($recordset);
 
         my $ref_field = $constraint->reference_fields->[0];
-        my @values = $recordset->get_values($ref_field);
+        my @values = $recordset->get_column_values($ref_field);
         croak("Field not found: $ref_field in table: $ref_table")
             unless @values;
         my $v_size = scalar(@values);
-        return [map { $values[int(rand($v_size))] } (1..$n)];
+        return map { $values[int(rand($v_size))] } (1..$n);
     } elsif ($field->is_primary_key or
              $field->is_unique or
              $field->is_auto_increment) {
-        return [1..$n];
+        return (1..$n);
     }
 
     my $is_unsigned = $field->extra->{unsigned} || 0;
     my $byte = get_numeric_type_byte($field->data_type);
     if ($is_unsigned) {
-        return [map { int(rand(2 ** ($byte * 8))) } (1..$n)];
+        return map { int(rand(2 ** ($byte * 8))) } (1..$n);
     } else {
-        return [map {
+        return map {
             [1, -1]->[int(rand(2))] * int(rand(2 ** ($byte * 8 - 1)))
-        } (1..$n)];
+        } (1..$n);
     }
 };
 
@@ -65,10 +65,10 @@ datatype 'tinyint' => sub {
 };
 
 datatype 'timestamp' => sub {
-    my $values = shift->redispatch('integer', @_);
-    return [map { 
+    my @values = shift->redispatch('integer', @_);
+    return map {
         strftime '%Y-%m-%d %H:%M:%S', localtime(abs($_))
-    } @$values];
+    } @values;
 };
 
 datatype 'char, varchar, tinytext, text, mediumtext' => sub {
@@ -78,7 +78,7 @@ datatype 'char, varchar, tinytext, text, mediumtext' => sub {
 
     my $record_prefix = substr $field_name, 0, $field_size - length($n);
     my $format = $record_prefix . "%0" . length($n) . "d";
-    return [map { sprintf $format, $_ } (1..$n)];
+    return map { sprintf $format, $_ } (1..$n);
 };
 
 datatype 'enum' => sub {
@@ -87,7 +87,7 @@ datatype 'enum' => sub {
     my $size = scalar(@$list);
     croak("Can't select value from empty ENUM list: " . $field->name)
         if $size == 0;
-    return [map { $list->[int(rand($size))] } (1..$n)];
+    return map { $list->[int(rand($size))] } (1..$n);
 };
 
 # TODO : support these data types

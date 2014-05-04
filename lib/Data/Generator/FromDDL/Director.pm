@@ -3,12 +3,13 @@ use strict;
 use warnings;
 use Carp qw(croak);
 use List::MoreUtils qw(any);
+use SQL::Translator;
 use Class::Accessor::Lite (
     rw => [qw(builder_class parser ddl include exclude)],
 );
 
 use Data::Generator::FromDDL::Util qw(normalize_parser_str);
-use Data::Generator::FromDDL::RecordSet;
+use Data::Generator::FromDDL::Formatter;
 
 sub new {
     my ($class, $args) = @_;
@@ -27,7 +28,7 @@ sub new {
 }
 
 sub generate {
-    my ($self, $num) = @_;
+    my ($self, $num, $format, $pretty, $bytes_per_sql) = @_;
     my @tables = $self->_get_right_order_tables;
     croak("No tables found: You might not specify all tables.")
         unless @tables;
@@ -43,15 +44,34 @@ sub generate {
             push @recordsets, $builder->generate($n);
         }
     }
+
     return @recordsets;
+}
+
+sub flush {
+    my ($self, $recordsets, $out_fh, $format, $pretty, $bytes_per_sql) = @_;
+
+    my $formatter = Data::Generator::FromDDL::Formatter->new(
+        format => $format,
+        pretty => $pretty,
+        bytes_per_sql => $bytes_per_sql,
+    );
+
+    for my $recordset (@$recordsets) {
+        $recordset->iterate_through_chunks(sub {
+            my ($table, $fields, $rows) = @_;
+            my $sql = $formatter->to_string($table, $fields, $rows);
+            print $out_fh $sql . "\n";
+        });
+    }
 }
 
 sub _get_num_for_table {
     my ($self, $num, $table_name) = @_;
     if (ref $num eq 'HASH') {
-        return exists $num->{tables}{$table_name} ? 
-            $num->{tables}{$table_name} :
-            $num->{all};
+        return exists $num->{tables}{$table_name}
+            ? $num->{tables}{$table_name}
+            : $num->{all};
     } else {
         return $num;
     }
@@ -61,6 +81,7 @@ sub _get_right_order_tables {
     my $self = shift;
     my @tables = $self->_get_all_tables;
     my @filtered = $self->_filter_tables(\@tables);
+
     return $self->_resolve_data_generation_order(\@filtered);
 }
 
@@ -70,6 +91,7 @@ sub _get_all_tables {
     $tr->parser(normalize_parser_str($self->parser))->($tr, $self->ddl);
     die "\nParsing DDL failed. Please check a DDL syntax.\n"
         unless $tr->schema->is_valid;
+
     return $tr->schema->get_tables;
 }
 
@@ -98,9 +120,11 @@ sub _resolve_data_generation_order {
     my ($self, $tables) = @_;
     my @unresolved = @$tables;
     my @resolved;
+
     while (@unresolved) {
         $self->_resolve_inter_table_reference(\@unresolved, \@resolved);
     }
+
     return @resolved;
 }
 
@@ -128,6 +152,7 @@ sub _exist_all_foreign_key_reference {
             return undef;
         }
     }
+
     return 1;
 }
 

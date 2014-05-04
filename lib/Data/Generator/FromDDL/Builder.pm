@@ -12,6 +12,7 @@ use Class::Accessor::Lite (
 use base qw(Exporter Class::Data::Inheritable);
 
 use Data::Generator::FromDDL::RecordSet;
+use Data::Generator::FromDDL::Util qw(need_quote_data_type);
 
 our @EXPORT = qw(datatype);
 
@@ -24,8 +25,11 @@ sub generate {
     my $recordset = Data::Generator::FromDDL::RecordSet->new($table, $n);
     for my $field ($table->get_fields) {
         my $data_type = lc($field->data_type);
-        my $values = $self->dispatch($data_type, $field, $n);
-        $recordset->add_cols($field, $values);
+        my @values = $self->dispatch($data_type, $field, $n);
+        if (need_quote_data_type($data_type)) {
+            @values = map { "'" . $_ . "'" } @values;
+        }
+        $recordset->set_column_values($field, \@values);
     }
     return $recordset;
 }
