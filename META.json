@@ -46,6 +46,7 @@
          "requires" : {
             "Class::Accessor::Lite" : "0",
             "Class::Data::Inheritable" : "0",
+            "Compress::Zlib" : "0",
             "Exporter" : "0",
             "Getopt::Long" : "0",
             "JSON" : "0",
@@ -53,7 +54,6 @@
             "List::Util" : "0",
             "SQL::Translator" : "0",
             "Term::ANSIColor" : "0",
-            "YAML::Tiny" : "0",
             "perl" : "5.008005"
          }
       },

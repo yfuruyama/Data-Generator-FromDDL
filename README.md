@@ -10,7 +10,7 @@ Data::Generator::FromDDL - Dummy data generator from DDL statements
         ddl => 'CREATE TABLE users (....);',
         parser => 'mysql',
     });
-    $generator->generate(100);
+    $generator->generate(100); # Generated data are written to STDOUT.
 
 # DESCRIPTION
 
@@ -84,7 +84,7 @@ Currently, composite (PRIMARY|UNIQUE|FOREIGN) KEY constraints are not supported.
 
     - $format (default: 'sql')
 
-        Output format. Choices are **'sql'**, **'json'**, **'yaml'**.
+        Output format. Choices are **'sql'** or **'json'**.
 
     - $pretty (default: false)
 

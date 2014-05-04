@@ -44,6 +44,7 @@ sub generate {
             push @recordsets, $builder->generate($n);
         }
     }
+
     return @recordsets;
 }
 
@@ -80,6 +81,7 @@ sub _get_right_order_tables {
     my $self = shift;
     my @tables = $self->_get_all_tables;
     my @filtered = $self->_filter_tables(\@tables);
+
     return $self->_resolve_data_generation_order(\@filtered);
 }
 
@@ -89,6 +91,7 @@ sub _get_all_tables {
     $tr->parser(normalize_parser_str($self->parser))->($tr, $self->ddl);
     die "\nParsing DDL failed. Please check a DDL syntax.\n"
         unless $tr->schema->is_valid;
+
     return $tr->schema->get_tables;
 }
 
@@ -117,9 +120,11 @@ sub _resolve_data_generation_order {
     my ($self, $tables) = @_;
     my @unresolved = @$tables;
     my @resolved;
+
     while (@unresolved) {
         $self->_resolve_inter_table_reference(\@unresolved, \@resolved);
     }
+
     return @resolved;
 }
 
@@ -147,6 +152,7 @@ sub _exist_all_foreign_key_reference {
             return undef;
         }
     }
+
     return 1;
 }
 

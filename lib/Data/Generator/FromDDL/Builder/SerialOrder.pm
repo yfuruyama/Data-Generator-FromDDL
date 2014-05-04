@@ -65,10 +65,10 @@ datatype 'tinyint' => sub {
 };
 
 datatype 'timestamp' => sub {
-    my $values = shift->redispatch('integer', @_);
+    my @values = shift->redispatch('integer', @_);
     return map {
         strftime '%Y-%m-%d %H:%M:%S', localtime(abs($_))
-    } @$values;
+    } @values;
 };
 
 datatype 'char, varchar, tinytext, text, mediumtext' => sub {
