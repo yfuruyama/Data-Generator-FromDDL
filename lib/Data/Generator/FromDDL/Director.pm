@@ -9,6 +9,7 @@ use Class::Accessor::Lite (
 
 use Data::Generator::FromDDL::Util qw(normalize_parser_str);
 use Data::Generator::FromDDL::RecordSet;
+use Data::Generator::FromDDL::Formatter;
 
 sub new {
     my ($class, $args) = @_;
@@ -27,7 +28,7 @@ sub new {
 }
 
 sub generate {
-    my ($self, $num) = @_;
+    my ($self, $num, $format, $pretty, $bytes_per_sql) = @_;
     my @tables = $self->_get_right_order_tables;
     croak("No tables found: You might not specify all tables.")
         unless @tables;
@@ -43,7 +44,20 @@ sub generate {
             push @recordsets, $builder->generate($n);
         }
     }
-    return @recordsets;
+
+    my $out_fh = $self->{out_fh} || *STDOUT;
+    my $formatter = Data::Generator::FromDDL::Formatter->new(
+        format => $format,
+        pretty => $pretty,
+        bytes_per_sql => $bytes_per_sql,
+    );
+    for my $recordset (@recordsets) {
+        $recordset->iterate_through_chunks(sub {
+            my ($table, $fields, $rows) = @_;
+            my $sql = $formatter->to_string($table, $fields, $rows);
+            print $out_fh $sql . "\n";
+        });
+    }
 }
 
 sub _get_num_for_table {

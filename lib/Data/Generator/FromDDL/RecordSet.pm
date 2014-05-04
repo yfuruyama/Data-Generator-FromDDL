@@ -4,16 +4,17 @@ package Data::Generator::FromDDL::RecordSet;
 
 use strict;
 use warnings;
+use POSIX qw(ceil);
 use List::Util qw(first);
 use Compress::Zlib qw(compress uncompress);
-use JSON ();
-use YAML::Tiny ();
 use bytes ();
 use Class::Accessor::Lite (
     rw => [qw(table n cols)],
 );
 
 use Data::Generator::FromDDL::Util qw(need_quote_data_type);
+
+use constant RECORDS_PER_CHUNK => 100_000;
 
 sub new {
     my ($class, $table, $n) = @_;
@@ -24,13 +25,25 @@ sub new {
     }, $class;
 }
 
-sub store_column_values {
+sub set_column_values {
     my ($self, $field, $values) = @_;
-    my $joined_values = join ',', @$values;
-    my $compressed_values = compress($joined_values);
+
+    my $n = $self->n;
+    my $offset = 0;
+    my $size;
+    my @chunks;
+    while ($n > 0) {
+        $size = $n >= RECORDS_PER_CHUNK ? RECORDS_PER_CHUNK : $n;
+        my @sliced_values = @$values[$offset..($offset + $size - 1)];
+        push @chunks, _store_values_into_chunk(\@sliced_values);
+
+        $n -= $size;
+        $offset += $size;
+    }
+
     push @{$self->{cols}}, {
         field => $field,
-        compressed_values => $compressed_values,
+        chunks => \@chunks,
     };
 }
 
@@ -38,30 +51,62 @@ sub get_column_values {
     my ($self, $field_name) = @_;
     my $col = first { $_->{field}->name eq $field_name } @{$self->cols};
     if ($col) {
-        my $uncompressed_values = uncompress($col->{compressed_values});
-        return split ',', $uncompressed_values;
+        return map { _fetch_values_from_chunk($_) } @{$col->{chunks}};
     } else {
         return undef;
     }
 }
 
-sub _construct_rows {
-    my ($self, $with_quote) = @_;
-    my $cols = $self->cols;
-    my @rows;
+sub _store_values_into_chunk {
+    my ($values) = @_;
+    return compress(join ',', @$values);
+}
 
+sub _fetch_values_from_chunk {
+    my ($chunk) = @_;
+    my $joined_chunk = uncompress($chunk);
+    return split ',', $joined_chunk;
+}
+
+sub iterate_through_chunks(&) {
+    my ($self, $code) = @_;
+    my $cols = $self->cols;
+    my $num_of_chunks = ceil($self->n / RECORDS_PER_CHUNK);
+
+    my $table = $self->table;
+    my @fields = map { $_->{field} } @{$self->cols};
+    for my $chunk_no (0..($num_of_chunks - 1)) {
+        my @rows = $self->_construct_rows_with_chunk_no($chunk_no, 1);
+        $code->($table, \@fields, \@rows);
+    }
+}
+
+sub _construct_rows_with_chunk_no {
+    my ($self, $chunk_no, $with_quote) = @_;
+    my $n = $self->n;
+    my $cols = $self->cols;
+    my $chunk_size
+        = ($n - ($chunk_no * RECORDS_PER_CHUNK)) >= RECORDS_PER_CHUNK
+        ? RECORDS_PER_CHUNK
+        : $n % RECORDS_PER_CHUNK
+        ;
     my %all_columns_values
         = map {
             my $field_name = $_->{field}->name;
-            my @column_values = $self->get_column_values($field_name);
-            $field_name => \@column_values
+            my @values = _fetch_values_from_chunk($_->{chunks}->[$chunk_no]);
+            $field_name => {
+                need_quote => need_quote_data_type($_->{field}->data_type),
+                values => \@values,
+            };
         } @$cols;
 
-    for my $i (0..($self->n)-1) {
-        my $row = [map { 
+    my @rows;
+    for my $i (0..($chunk_size - 1)) {
+        my $row = [map {
             my $field = $_->{field};
-            my $values = $all_columns_values{$field->name};
-            if ($with_quote && need_quote_data_type($field->data_type)) {
+            my $need_quote = $all_columns_values{$field->name}->{need_quote};
+            my $values = $all_columns_values{$field->name}->{values};
+            if ($with_quote && $need_quote) {
                 "'" . $values->[$i] . "'";
             } else {
                 $values->[$i];
@@ -71,88 +116,6 @@ sub _construct_rows {
     }
 
     return @rows;
-}
-
-sub _construct_data {
-    my $self = shift;
-    my $cols = $self->cols;
-    my @fields = map { $_->{field} } @$cols;
-    my @rows = $self->_construct_rows;
-
-    my $data = {
-        table => $self->table->name,
-        values => [],
-    };
-    for my $row (@rows) {
-        my $record = {};
-        for (0..$#fields) {
-            $record->{$fields[$_]->name} = $row->[$_];
-        }
-        push @{$data->{values}}, $record;
-    }
-    return $data;
-}
-
-sub to_sql {
-    my ($self, $pretty, $bytes_per_sql) = @_;
-    my $cols = $self->cols;
-    my @fields = map { $_->{field} } @$cols;
-    my @rows = $self->_construct_rows(1);
-
-    my $format;
-    my $record_sep;
-    if ($pretty) {
-        $format = qq(
-INSERT INTO
-    `%s` (%s)
-VALUES
-    );
-        $record_sep = ",\n    ";
-    } else {
-        $format = 'INSERT INTO `%s` (%s) VALUES ';
-        $record_sep = ',';
-    }
-    my $columns = join ',', map { '`' . $_->name . '`' } @fields;
-    my $insert_stmt = sprintf $format, $self->table->name, $columns;
-
-    my $sqls = '';
-    my @values;
-    my $sum_bytes = bytes::length($insert_stmt) + 1; # +1 is for trailing semicolon of sql
-    my $record_sep_len = bytes::length($record_sep);
-    for my $row (@rows) {
-        my $value = '(' . join(',', @$row) . ')';
-        my $v_len = bytes::length($value);
-        if ($sum_bytes + $v_len >= $bytes_per_sql) {
-            if (@values) {
-                $sqls .= $insert_stmt . (join $record_sep, @values) . ';';
-                $sum_bytes = bytes::length($insert_stmt) + 1;
-                @values = ();
-            }
-        }
-        push @values, $value;
-        $sum_bytes += $v_len + $record_sep_len;
-    }
-
-    if (@values) {
-        $sqls .= $insert_stmt . (join $record_sep, @values) . ';';
-    }
-    return $sqls;
-}
-
-sub to_json {
-    my ($self, $pretty) = @_;
-    my $data = $self->_construct_data;
-    if ($pretty) {
-        return JSON->new->pretty->encode($data);
-    } else {
-        return JSON->new->encode($data);
-    }
-}
-
-sub to_yaml {
-    my ($self) = @_;
-    my $data = $self->_construct_data;
-    return YAML::Tiny::Dump($data);
 }
 
 1;
