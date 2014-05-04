@@ -2,6 +2,12 @@ Revision history for Perl extension Data-Generator-FromDDL
 
 {{$NEXT}}
 
+0.03 2014-05-04T03:56:40Z
+
+    - Reduced memory usage to half.
+
+    - 25% speed up generating time.
+
 0.02 2014-05-01T06:11:15Z
 
     - Added '--bytes_per_sql' option to datagen_from_ddl(1)
