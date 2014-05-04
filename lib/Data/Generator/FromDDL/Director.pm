@@ -44,14 +44,19 @@ sub generate {
             push @recordsets, $builder->generate($n);
         }
     }
+    return @recordsets;
+}
 
-    my $out_fh = $self->{out_fh} || *STDOUT;
+sub flush {
+    my ($self, $recordsets, $out_fh, $format, $pretty, $bytes_per_sql) = @_;
+
     my $formatter = Data::Generator::FromDDL::Formatter->new(
         format => $format,
         pretty => $pretty,
         bytes_per_sql => $bytes_per_sql,
     );
-    for my $recordset (@recordsets) {
+
+    for my $recordset (@$recordsets) {
         $recordset->iterate_through_chunks(sub {
             my ($table, $fields, $rows) = @_;
             my $sql = $formatter->to_string($table, $fields, $rows);
@@ -63,9 +68,9 @@ sub generate {
 sub _get_num_for_table {
     my ($self, $num, $table_name) = @_;
     if (ref $num eq 'HASH') {
-        return exists $num->{tables}{$table_name} ? 
-            $num->{tables}{$table_name} :
-            $num->{all};
+        return exists $num->{tables}{$table_name}
+            ? $num->{tables}{$table_name}
+            : $num->{all};
     } else {
         return $num;
     }

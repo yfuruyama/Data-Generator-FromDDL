@@ -9,7 +9,7 @@ use List::Util qw(first);
 use Compress::Zlib qw(compress uncompress);
 use bytes ();
 use Class::Accessor::Lite (
-    rw => [qw(table n cols)],
+    rw => [qw(table n columns)],
 );
 
 use Data::Generator::FromDDL::Util qw(need_quote_data_type);
@@ -21,7 +21,7 @@ sub new {
     return bless {
         table => $table,
         n => $n,
-        cols => [],
+        columns => [],
     }, $class;
 }
 
@@ -41,7 +41,7 @@ sub set_column_values {
         $offset += $size;
     }
 
-    push @{$self->{cols}}, {
+    push @{$self->{columns}}, {
         field => $field,
         chunks => \@chunks,
     };
@@ -49,7 +49,7 @@ sub set_column_values {
 
 sub get_column_values {
     my ($self, $field_name) = @_;
-    my $col = first { $_->{field}->name eq $field_name } @{$self->cols};
+    my $col = first { $_->{field}->name eq $field_name } @{$self->columns};
     if ($col) {
         return map { _fetch_values_from_chunk($_) } @{$col->{chunks}};
     } else {
@@ -70,11 +70,11 @@ sub _fetch_values_from_chunk {
 
 sub iterate_through_chunks(&) {
     my ($self, $code) = @_;
-    my $cols = $self->cols;
+    my $columns = $self->columns;
     my $num_of_chunks = ceil($self->n / RECORDS_PER_CHUNK);
 
     my $table = $self->table;
-    my @fields = map { $_->{field} } @{$self->cols};
+    my @fields = map { $_->{field} } @{$self->columns};
     for my $chunk_no (0..($num_of_chunks - 1)) {
         my @rows = $self->_construct_rows_with_chunk_no($chunk_no, 1);
         $code->($table, \@fields, \@rows);
@@ -84,7 +84,7 @@ sub iterate_through_chunks(&) {
 sub _construct_rows_with_chunk_no {
     my ($self, $chunk_no, $with_quote) = @_;
     my $n = $self->n;
-    my $cols = $self->cols;
+    my $columns = $self->columns;
     my $chunk_size
         = ($n - ($chunk_no * RECORDS_PER_CHUNK)) >= RECORDS_PER_CHUNK
         ? RECORDS_PER_CHUNK
@@ -98,7 +98,7 @@ sub _construct_rows_with_chunk_no {
                 need_quote => need_quote_data_type($_->{field}->data_type),
                 values => \@values,
             };
-        } @$cols;
+        } @$columns;
 
     my @rows;
     for my $i (0..($chunk_size - 1)) {
@@ -111,7 +111,7 @@ sub _construct_rows_with_chunk_no {
             } else {
                 $values->[$i];
             }
-        } @$cols];
+        } @$columns];
         push @rows, $row;
     }
 

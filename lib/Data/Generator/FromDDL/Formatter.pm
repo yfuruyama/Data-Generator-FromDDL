@@ -2,6 +2,7 @@ package Data::Generator::FromDDL::Formatter;
 
 use strict;
 use warnings;
+use Carp qw(croak);
 use JSON ();
 use Class::Accessor::Lite (
     new => 1,
@@ -10,31 +11,39 @@ use Class::Accessor::Lite (
 
 sub to_string {
     my ($self, $table, $fields, $rows) = @_;
-    if ($self->format =~ /json/i) {
-        $self->to_json($table, $fields, $rows);
-    } else {
-        $self->to_sql($table, $fields, $rows);
-    }
+
+    my $formatter = do {
+        if ($self->format =~ /sql/i) {
+            'to_sql';
+        } elsif ($self->format =~ /json/i) {
+            'to_json';
+        } else {
+            croak("Unsupported format: " . $self->format);
+        }
+    };
+
+    $self->$formatter($table, $fields, $rows);
 }
 
 sub to_sql {
     my ($self, $table, $fields, $rows) = @_;
 
-    my $format;
+    my $insert_stmt;
     my $record_sep;
     if ($self->pretty) {
-        $format = qq(
+        $insert_stmt = qq(
 INSERT INTO
     `%s` (%s)
 VALUES
     );
         $record_sep = ",\n    ";
     } else {
-        $format = 'INSERT INTO `%s` (%s) VALUES ';
+        $insert_stmt = 'INSERT INTO `%s` (%s) VALUES ';
         $record_sep = ',';
     }
+
     my $columns = join ',', map { '`' . $_->name . '`' } @$fields;
-    my $insert_stmt = sprintf $format, $table->name, $columns;
+    $insert_stmt = sprintf $insert_stmt, $table->name, $columns;
 
     my $sqls = '';
     my @values;
@@ -71,8 +80,6 @@ sub to_json {
         }
     };
 
-    use Data::Dumper;
-    print Dumper $rows;
     return $json->encode({
         table => $table->name,
         fields => [ map { $_->name } @$fields ],

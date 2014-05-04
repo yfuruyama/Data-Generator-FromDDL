@@ -14,20 +14,31 @@ our $VERSION = "0.02";
 
 sub generate {
     my ($self, $num, $out_fh, $format, $pretty, $bytes_per_sql) = @_;
+
+    # set default values if not specified
     my $builder_class = $self->builder_class
         || 'Data::Generator::FromDDL::Builder::SerialOrder';
+    my $parser = $self->parser || 'mysql';
+    my $include = $self->include || [];
+    my $exclude = $self->exclude || [];
+    my $ddl = $self->ddl || '';
+    $out_fh ||= *STDOUT;
     $format ||= 'sql';
     $bytes_per_sql ||= 1024 * 1024; # 1MB;
 
     my $director = Data::Generator::FromDDL::Director->new({
         builder_class => $builder_class,
-        parser => $self->parser || 'mysql',
-        ddl => $self->ddl,
-        include => $self->include || [],
-        exclude => $self->exclude || [],
+        parser => $parser,
+        ddl => $ddl,
+        include => $include,
+        exclude => $exclude,
         out_fh => $out_fh,
     });
-    $director->generate($num, $format, $pretty, $bytes_per_sql);
+
+    my @recordsets = $director->generate($num);
+    $director->flush(
+        \@recordsets, $out_fh, $format, $pretty, $bytes_per_sql
+    );
 }
 
 
@@ -48,7 +59,7 @@ Data::Generator::FromDDL - Dummy data generator from DDL statements
         ddl => 'CREATE TABLE users (....);',
         parser => 'mysql',
     });
-    $generator->generate(100);
+    $generator->generate(100); # Generated data are written to STDOUT.
 
 =head1 DESCRIPTION
 
