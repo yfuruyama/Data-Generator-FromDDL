@@ -10,52 +10,39 @@ our @EXPORT_OK = qw(
 );
 
 sub normalize_parser_str {
-    my $parser = shift;
-    if ($parser =~ /mysql/i) {
-        return 'MySQL';
-    } elsif ($parser =~ /sqlite/i) {
-        return 'SQLite';
-    } elsif ($parser =~ /oracle/i) {
-        return 'Oracle';
-    } elsif ($parser =~ /postgresql/i) {
-        return 'PostgreSQL';
-    }
+    my $parser = lc(shift);
+    my %normalized_parsers = (
+        mysql      => 'MySQL',
+        sqlite     => 'SQLite',
+        oracle     => 'Oracle',
+        postgresql => 'PostgreSQL',
+    );
 
-    return $parser;
+    return $normalized_parsers{$parser} || undef;
 }
 
 sub need_quote_data_type {
     my $type = lc(shift);
-    if ($type eq 'char' or 
-        $type eq 'varchar' or
-        $type eq 'tinytext' or
-        $type eq 'text' or
-        $type eq 'mediumtext' or
-        $type eq 'timestamp' or
-        $type eq 'enum') {
-        return 1;
-    } else {
-        return undef;
-    }
+    my %quote_data_types = map { $_ => 1 }
+        qw(char varchar tinytext text mediumtext timestamp enum);
+
+    return $quote_data_types{$type} || undef;
 }
 
 sub get_numeric_type_byte {
     my $type = lc(shift);
-    if ($type eq 'bigint') {
-        return 8;
-    } elsif ($type eq 'int' or $type eq 'integer') {
-        return 4;
-    } elsif ($type eq 'mediumint') {
-        return 3;
-    } elsif ($type eq 'smallint') {
-        return 2;
-    } elsif ($type eq 'tinyint') {
-        return 1;
-    } elsif ($type eq 'timestamp') {
+    my %numeric_type_bytes = (
+        bigint    => 8,
+        int       => 4,
+        integer   => 4,
+        mediumint => 3,
+        smallint  => 2,
+        tinyint   => 1,
         # UNIX timestamps are signed integer
-        return 4;
-    }
-}
+        timestamp => 4,
+    );
 
+    return $numeric_type_bytes{$type} || 0; 
+}
 
 1;
