@@ -30,13 +30,7 @@ sub to_sql {
     my $insert_stmt;
     my $record_sep;
     if ($self->pretty) {
-        $insert_stmt = <<"END_INSERT";
-INSERT INTO
-    `%s` (%s)
-VALUES
-    
-END_INSERT
-        chomp $insert_stmt;
+        $insert_stmt = "INSERT INTO\n    `%s` (%s)\nVALUES\n    ";
         $record_sep = ",\n    ";
     } else {
         $insert_stmt = 'INSERT INTO `%s` (%s) VALUES ';
