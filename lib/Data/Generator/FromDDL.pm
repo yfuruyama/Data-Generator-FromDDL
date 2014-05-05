@@ -2,12 +2,14 @@ package Data::Generator::FromDDL;
 use 5.008005;
 use strict;
 use warnings;
+use SQL::Translator;
 use Class::Accessor::Lite (
     new => 1,
     rw => [qw(builder_class parser ddl include exclude)],
 );
 
 use Data::Generator::FromDDL::Director;
+use Data::Generator::FromDDL::Util qw(normalize_parser_str);
 
 our $VERSION = "0.03";
 
@@ -15,8 +17,7 @@ sub generate {
     my ($self, $num, $out_fh, $format, $pretty, $bytes_per_sql) = @_;
 
     # set default values if not specified
-    my $builder_class = $self->builder_class
-        || 'Data::Generator::FromDDL::Builder::SerialOrder';
+    my $builder_class = _load_builder_class($self->builder_class);
     my $parser = $self->parser || 'mysql';
     my $include = $self->include || [];
     my $exclude = $self->exclude || [];
@@ -25,19 +26,45 @@ sub generate {
     $format ||= 'sql';
     $bytes_per_sql ||= 1024 * 1024; # 1MB;
 
-    my $director = Data::Generator::FromDDL::Director->new({
+    my $schema = _parse_ddl($parser, $ddl);
+
+    my $director = Data::Generator::FromDDL::Director->new(
         builder_class => $builder_class,
-        parser => $parser,
-        ddl => $ddl,
+        schema => $schema,
         include => $include,
         exclude => $exclude,
-        out_fh => $out_fh,
-    });
+    );
 
     my @recordsets = $director->generate($num);
     $director->flush(
         \@recordsets, $out_fh, $format, $pretty, $bytes_per_sql
     );
+}
+
+sub _parse_ddl {
+    my ($parser, $ddl) = @_;
+    my $tr = SQL::Translator->new;
+    $tr->parser(normalize_parser_str($parser))->($tr, $ddl);
+    die "\nParsing DDL failed. Please check a DDL syntax.\n"
+        unless $tr->schema->is_valid;
+
+    return $tr->schema;
+}
+
+sub _load_builder_class {
+    my ($builder_class) = @_;
+    $builder_class ||= 'Data::Generator::FromDDL::Builder::SerialOrder';
+
+    my $builder_file = $builder_class;
+    $builder_file =~ s!::!/!g;
+    eval {
+        require "$builder_file.pm";
+    };
+    if ($@) {
+        croak("Can't require $builder_class");
+    }
+
+    return $builder_class;
 }
 
 

@@ -3,29 +3,12 @@ use strict;
 use warnings;
 use Carp qw(croak);
 use List::MoreUtils qw(any);
-use SQL::Translator;
 use Class::Accessor::Lite (
-    rw => [qw(builder_class parser ddl include exclude)],
+    new => 1,
+    rw => [qw(builder_class schema include exclude)],
 );
 
-use Data::Generator::FromDDL::Util qw(normalize_parser_str);
 use Data::Generator::FromDDL::Formatter;
-
-sub new {
-    my ($class, $args) = @_;
-
-    my $builder_class = $args->{builder_class};
-    my $builder_file = $builder_class;
-    $builder_file =~ s!::!/!g;
-    eval {
-        require "$builder_file.pm";
-    };
-    if ($@) {
-        croak("Can't require $builder_class");
-    }
-
-    return bless $args, $class;
-}
 
 sub generate {
     my ($self, $num, $format, $pretty, $bytes_per_sql) = @_;
@@ -40,6 +23,7 @@ sub generate {
             recordsets => \@recordsets,
         });
         my $n = $self->_get_num_for_table($num, $table->name);
+
         if ($n) {
             push @recordsets, $builder->generate($n);
         }
@@ -79,20 +63,10 @@ sub _get_num_for_table {
 
 sub _get_right_order_tables {
     my $self = shift;
-    my @tables = $self->_get_all_tables;
+    my @tables = $self->schema->get_tables;
     my @filtered = $self->_filter_tables(\@tables);
 
     return $self->_resolve_data_generation_order(\@filtered);
-}
-
-sub _get_all_tables {
-    my $self = shift;
-    my $tr = SQL::Translator->new;
-    $tr->parser(normalize_parser_str($self->parser))->($tr, $self->ddl);
-    die "\nParsing DDL failed. Please check a DDL syntax.\n"
-        unless $tr->schema->is_valid;
-
-    return $tr->schema->get_tables;
 }
 
 sub _filter_tables {
