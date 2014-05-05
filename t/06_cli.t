@@ -26,15 +26,15 @@ sub _get_result {
     };
 }
 
-subtest 'parse_bytes_per_sql' => sub {
+subtest 'parse_byte_string' => sub {
     my $cli = Data::Generator::FromDDL::CLI->new;
 
-    is $cli->parse_bytes_per_sql('12'), 12;
-    is $cli->parse_bytes_per_sql('12KB'), 12 * 1024;
-    is $cli->parse_bytes_per_sql('12kb'), 12 * 1024;
-    is $cli->parse_bytes_per_sql('12k'), 12 * 1024;
-    is $cli->parse_bytes_per_sql('12MB'), 12 * 1024 * 1024;
-    is $cli->parse_bytes_per_sql('12GB'), 12 * 1024 * 1024 * 1024;
+    is $cli->parse_byte_string('12'), 12;
+    is $cli->parse_byte_string('12KB'), 12 * 1024;
+    is $cli->parse_byte_string('12kb'), 12 * 1024;
+    is $cli->parse_byte_string('12k'), 12 * 1024;
+    is $cli->parse_byte_string('12MB'), 12 * 1024 * 1024;
+    is $cli->parse_byte_string('12GB'), 12 * 1024 * 1024 * 1024;
 };
 
 subtest 'cli with all options' => sub {

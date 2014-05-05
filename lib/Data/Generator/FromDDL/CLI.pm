@@ -34,16 +34,16 @@ sub parse_num_option {
     return $parsed;
 }
 
-sub parse_bytes_per_sql {
-    my ($self, $bytes) = @_;
+sub parse_byte_string {
+    my ($self, $byte_string) = @_;
 
-    if ($bytes =~ /(\d+)KB?/i) {
-        $bytes = $1 * 1024;
-    } elsif ($bytes =~ /(\d+)MB?/i) {
-        $bytes = $1 * 1024 * 1024;
-    } elsif ($bytes =~ /(\d+)GB?/i) {
-        $bytes = $1 * 1024 * 1024 * 1024;
-    }
+    my ($numeric, $unit) = ($byte_string =~ m/(\d+)([^\d]*)/);
+    my $factor = $unit =~ /KB?/i ? 1024
+               : $unit =~ /MB?/i ? 1024 * 1024
+               : $unit =~ /GB?/i ? 1024 * 1024 * 1024
+               : 1
+               ;
+    my $bytes = $numeric * $factor;
 
     $self->bytes_per_sql($bytes);
     return $bytes;
@@ -139,7 +139,7 @@ sub run {
     $self->setup_out_fh($out);
     $self->setup_include_exclude($include, $exclude);
     $self->parse_num_option($n);
-    $self->parse_bytes_per_sql($bytes_per_sql);
+    $self->parse_byte_string($bytes_per_sql);
 
     my $generator = Data::Generator::FromDDL->new({
         ddl     => $self->ddl,
