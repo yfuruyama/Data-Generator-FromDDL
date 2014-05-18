@@ -46,7 +46,7 @@ subtest 'cli with all options' => sub {
     $cli->run(@args);
 
     is _get_result($out_fh->filename), <<'END_EXPECT';
-INSERT INTO
+INSERT IGNORE INTO
     `T1` (`a`)
 VALUES
     (1);

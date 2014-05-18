@@ -12,7 +12,7 @@ open my $out_fh, '>', \$output;
 $generator->generate(3, $out_fh);
 
 is $output, <<EOL;
-INSERT INTO `users` (`id`) VALUES (1),(2),(3);
+INSERT IGNORE INTO `users` (`id`) VALUES (1),(2),(3);
 EOL
 
 done_testing;
