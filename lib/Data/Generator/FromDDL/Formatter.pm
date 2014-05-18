@@ -30,10 +30,10 @@ sub to_sql {
     my $insert_stmt;
     my $record_sep;
     if ($self->pretty) {
-        $insert_stmt = "INSERT INTO\n    `%s` (%s)\nVALUES\n    ";
+        $insert_stmt = "INSERT IGNORE INTO\n    `%s` (%s)\nVALUES\n    ";
         $record_sep = ",\n    ";
     } else {
-        $insert_stmt = 'INSERT INTO `%s` (%s) VALUES ';
+        $insert_stmt = 'INSERT IGNORE INTO `%s` (%s) VALUES ';
         $record_sep = ',';
     }
 
@@ -48,7 +48,7 @@ sub to_sql {
     for my $row (@$rows) {
         my $value = '(' . join(',', @$row) . ')';
         my $v_len = bytes::length($value);
-        if ($sum_bytes + $v_len >= $bytes_per_sql) {
+        if ($sum_bytes + $v_len + $record_sep_len > $bytes_per_sql) {
             if (@values) {
                 $sqls .= $insert_stmt . (join $record_sep, @values) . ';';
                 $sum_bytes = bytes::length($insert_stmt) + 1;

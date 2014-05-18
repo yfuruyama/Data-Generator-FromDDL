@@ -16,15 +16,15 @@ sub _generate {
 subtest 'single sql statement' => sub {
     my $ddl = 'CREATE TABLE t (id int AUTO_INCREMENT);';
 
-    # length('INSERT INTO `t` (`name`) VALUES ;') => 33
+    # length('INSERT IGNORE INTO `t` (`id`) VALUES ;') => 38
 
     my $num_of_records = 1;
-    my $bytes_per_sql = 36;
+    my $bytes_per_sql = 41;
     my $got = _generate($ddl, $num_of_records, $bytes_per_sql);
     is scalar(split ';', $got), 1;
 
     $num_of_records = 2;
-    $bytes_per_sql = 40;
+    $bytes_per_sql = 46;
     $got = _generate($ddl, $num_of_records, $bytes_per_sql);
     is scalar(split ';', $got), 1;
 };
@@ -46,15 +46,15 @@ subtest 'abnormal bytes_per_sql value' => sub {
 subtest 'divide into multiple sql statements' => sub {
     my $ddl = 'CREATE TABLE t (id int AUTO_INCREMENT);';
 
-    # length('INSERT INTO `t` (`name`) VALUES ;') => 33
+    # length('INSERT IGNORE INTO `t` (`id`) VALUES ;') => 38
 
     my $num_of_records = 2;
-    my $bytes_per_sql = 36;
+    my $bytes_per_sql = 41;
     my $got = _generate($ddl, $num_of_records, $bytes_per_sql);
     is scalar(split ';', $got), 2;
 
     $num_of_records = 6;
-    $bytes_per_sql = 40;
+    $bytes_per_sql = 46;
     $got = _generate($ddl, $num_of_records, $bytes_per_sql);
     is scalar(split ';', $got), 3;
 };
