@@ -50,7 +50,7 @@ sub to_sql {
         my $v_len = bytes::length($value);
         if ($sum_bytes + $v_len + $record_sep_len > $bytes_per_sql) {
             if (@values) {
-                $sqls .= $insert_stmt . (join $record_sep, @values) . ';';
+                $sqls .= $insert_stmt . (join $record_sep, @values) . ";\n";
                 $sum_bytes = bytes::length($insert_stmt) + 1;
                 @values = ();
             }
