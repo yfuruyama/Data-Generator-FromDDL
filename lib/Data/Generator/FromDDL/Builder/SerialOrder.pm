@@ -64,6 +64,11 @@ datatype 'tinyint' => sub {
     return shift->redispatch('integer', @_);
 };
 
+datatype 'boolean, bool' => sub {
+    my ($builder, $field, $n, $recordsets) = @_;
+    return map { int(rand(2)) } (1..$n); # 0 or 1
+};
+
 datatype 'timestamp' => sub {
     my @values = shift->redispatch('integer', @_);
     return map {
