@@ -40,15 +40,15 @@ Example:
 
 =item B<-p|--parser (default: MySQL)>
 
-Parser for DDL. Choices are MySQL, SQLite, Oracle, or PostgreSQL.
+Parser for DDL. Parser can be 'MySQL', 'SQLite', 'Oracle', or 'PostgreSQL'.
 
 =item B<-i|--include>
 
-Only tables which are specified this option are processed.
+Only tables specified by this option are processed.
 
 =item B<-e|--exclude>
 
-Tables which are specified this option are ignored(--include and --exclude options are exclusively used).
+Tables which are specified this option are ignored(--include and --exclude options are exclusively specified).
 
 =item B<-o|--out>
 
@@ -56,15 +56,17 @@ Output file.
 
 =item B<-f|--format (default: SQL)>
 
-Output format. Choices are SQL or JSON.
+Output format. Format can be 'SQL' or 'JSON'.
 
 =item B<--pretty>
 
-Print output prettily.
+Pretty print.
 
 =item B<--bytes_per_sql> (default: 1MB)
 
 The maximum bytes of bulk insert statement.
+
+You can specify this option value like '64', '1MB', '10M'.
 
 This option is releated to the MySQL's B<'max_allowed_packet'> variable which stands for the maximum size of string. It's recommended to suit this option for your MySQL settings.
 
