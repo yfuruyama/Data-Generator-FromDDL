@@ -65,6 +65,37 @@ subtest 'datatype tinyint' => sub {
     }
 };
 
+subtest 'datatype float(double)' => sub {
+    my $ddl = 'CREATE TABLE t (`lat` float(8, 8));';
+    my $expect = qr/INSERT IGNORE INTO `t` \(`lat`\) VALUES \((-?\d+\.\d+)\);/;
+    my $got = _generate($ddl);
+    if ($got =~ $expect) {
+        ok $1 < 1;
+    } else {
+        fail;
+    }
+
+    $ddl = 'CREATE TABLE t (`lat` double(4, 1));';
+    $expect = qr/INSERT IGNORE INTO `t` \(`lat`\) VALUES \((-?\d+\.\d+)\);/;
+    $got = _generate($ddl);
+    if ($got =~ $expect) {
+        ok $1 < 1000;
+    } else {
+        fail;
+    }
+};
+
+subtest 'datatype boolean(bool)' => sub {
+    my $ddl = 'CREATE TABLE t (`is_valid` boolean);';
+    my $expect = qr/INSERT IGNORE INTO `t` \(`is_valid`\) VALUES \(([\d]+)\);/;
+    my $got = _generate($ddl);
+    if ($got =~ $expect) {
+        ok ($1 == 0 or $1 == 1);
+    } else {
+        fail;
+    }
+};
+
 subtest 'datatype timestamp' => sub {
     my $ddl = 'CREATE TABLE t (`date` timestamp);';
     my $expect = qr/INSERT IGNORE INTO `t` \(`date`\) VALUES \('\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\'\);/;
