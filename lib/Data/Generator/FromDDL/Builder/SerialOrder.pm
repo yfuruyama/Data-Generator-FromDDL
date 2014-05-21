@@ -64,6 +64,22 @@ datatype 'tinyint' => sub {
     return shift->redispatch('integer', @_);
 };
 
+datatype 'float, double' => sub {
+    my ($builder, $field, $n, $recordsets) = @_;
+
+    my @size = $field->size();
+    my $total_len = $size[0] || 32;
+    my $decimal_len = $size[1] || 0;
+    my $integer_len = $total_len - $decimal_len;
+    my $max_integer = 10 ** $integer_len - 1 || 1;
+
+    my $format = '%.' . $decimal_len . 'f';
+    my $c = 0.1 ** $decimal_len; # for avoiding round-up
+    return map {
+        sprintf $format, [1, -1]->[int(rand(2))] * (rand($max_integer) - $c)
+    } (1..$n);
+};
+
 datatype 'boolean, bool' => sub {
     my ($builder, $field, $n, $recordsets) = @_;
     return map { int(rand(2)) } (1..$n); # 0 or 1
