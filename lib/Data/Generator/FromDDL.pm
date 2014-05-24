@@ -159,9 +159,19 @@ Arguments are:
 
 =over 4
 
-=item $num
+=item $num or \%num
 
 Number of records generated.
+
+Or you can also give number of records for each table.
+
+    $num = {all => 20, # 20 records for all tables
+            tables => {
+                users => 10 # 10 records for 'users' table
+                }
+            };
+
+This is useful for table that has one-to-many relationship with other table.
 
 =item $out_fh (default: *STDOUT)
 
