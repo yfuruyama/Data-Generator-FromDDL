@@ -2,6 +2,7 @@ package Data::Generator::FromDDL;
 use 5.008005;
 use strict;
 use warnings;
+use Carp qw(croak);
 use SQL::Translator;
 use Class::Accessor::Lite (
     new => 1,
@@ -45,7 +46,7 @@ sub _parse_ddl {
     my ($parser, $ddl) = @_;
     my $tr = SQL::Translator->new;
     $tr->parser(normalize_parser_str($parser))->($tr, $ddl);
-    die "\nParsing DDL failed. Please check a DDL syntax.\n"
+    croak "Parsing DDL failed. Please check a DDL syntax.\n"
         unless $tr->schema->is_valid;
 
     return $tr->schema;
@@ -61,7 +62,7 @@ sub _load_builder_class {
         require "$builder_file.pm";
     };
     if ($@) {
-        croak("Can't require $builder_class");
+        croak("Can't require $builder_class \n");
     }
 
     return $builder_class;

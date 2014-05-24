@@ -13,7 +13,7 @@ use Data::Generator::FromDDL::Formatter;
 sub generate {
     my ($self, $num, $format, $pretty, $bytes_per_sql) = @_;
     my @tables = $self->_get_right_order_tables;
-    croak("No tables found: You might not specify all tables.")
+    croak("Not all tables found: You must specify all tables schema.\n")
         unless @tables;
 
     my @recordsets;
