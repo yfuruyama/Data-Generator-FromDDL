@@ -51,7 +51,7 @@ sub get_column_values {
     if ($col) {
         return map { _fetch_values_from_chunk($_) } @{$col->{chunks}};
     } else {
-        return undef;
+        return;
     }
 }
 
