@@ -95,8 +95,13 @@ sub _resolve_data_generation_order {
     my @unresolved = @$tables;
     my @resolved;
 
-    while (@unresolved) {
+    while (my @before = @unresolved) {
         $self->_resolve_inter_table_reference(\@unresolved, \@resolved);
+
+        # can't resolve inter table reference anymore.
+        if (@before == @unresolved) {
+            croak("Not all tables found: You must specify all tables schema.\n");
+        }
     }
 
     return @resolved;
