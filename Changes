@@ -2,6 +2,11 @@ Revision history for Perl extension Data-Generator-FromDDL
 
 {{$NEXT}}
 
+0.06 2014-05-25T00:21:04Z
+
+    - Fixed bugs
+    - Updated document
+
 0.05 2014-05-21T15:24:53Z
 
     - Support float, double, and boolean types.
