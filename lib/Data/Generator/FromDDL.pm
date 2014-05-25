@@ -205,6 +205,14 @@ The C<datagen_from_ddl(1)> command is provided as an interface to this module.
 
 For more details, please see L<datagen_from_ddl>(1).
 
+=head1 CONTRIBUTORS
+
+=over 4
+
+=item Kesin11 (Kenta Kase)
+
+=back
+
 =head1 LICENSE
 
 Copyright (C) Yuuki Furuyama.

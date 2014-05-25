@@ -75,5 +75,8 @@
          "web" : "https://github.com/addsict/Data-Generator-FromDDL"
       }
    },
-   "version" : "0.05"
+   "version" : "0.05",
+   "x_contributors" : [
+      "Kenta Kase <kesin1202000@gmail.com>"
+   ]
 }

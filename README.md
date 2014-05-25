@@ -75,9 +75,19 @@ Supported data types are
 
     Arguments are:
 
-    - $num
+    - $num or \\%num
 
         Number of records generated.
+
+        Or you can also give number of records for each table.
+
+            $num = {all => 20, # 20 records for all tables
+                    tables => {
+                        users => 10 # 10 records for 'users' table
+                        }
+                    };
+
+        This is useful for table that has one-to-many relationship with other table.
 
     - $out\_fh (default: \*STDOUT)
 
@@ -106,6 +116,10 @@ The `datagen_from_ddl(1)` command is provided as an interface to this module.
     $ datagen_from_ddl --num=100 --parser=mysql --pretty your_ddl.sql
 
 For more details, please see [datagen\_from\_ddl](https://metacpan.org/pod/datagen_from_ddl)(1).
+
+# CONTRIBUTORS
+
+- Kesin11 (Kenta Kase)
 
 # LICENSE
 
