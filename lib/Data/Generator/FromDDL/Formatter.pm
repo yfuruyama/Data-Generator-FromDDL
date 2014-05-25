@@ -17,7 +17,7 @@ sub to_string {
         } elsif ($self->format =~ /json/i) {
             'to_json';
         } else {
-            croak("Unsupported format: " . $self->format);
+            croak("Unsupported format: " . $self->format . "\n");
         }
     };
 

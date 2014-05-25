@@ -158,8 +158,9 @@ sub run {
         );
         close $self->out_fh;
     };
-    if ($@) {
-        print colored($@, 'red');
+    if (my $err = $@) {
+        $err =~ s/([^\n]*)\n.*/$1/;
+        print colored($err, 'red');
         exit 1;
     }
 }

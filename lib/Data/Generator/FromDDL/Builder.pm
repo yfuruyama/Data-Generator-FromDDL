@@ -43,7 +43,7 @@ sub dispatch {
     my ($self, $data_type, $field, $n) = @_;
     my $class = ref $self;
     my $code = $class->dispatch_table->{$data_type};
-    croak "Unsupported data type: $data_type"
+    croak "Unsupported data type: $data_type \n"
         unless $code;
     
     return $code->($self, $field, $n, $self->recordsets);

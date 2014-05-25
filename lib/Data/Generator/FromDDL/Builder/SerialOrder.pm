@@ -18,13 +18,12 @@ datatype 'integer' => sub {
         my $constraint = $field->foreign_key_reference;
         my $ref_table = $constraint->reference_table;
         my $recordset = first { $_->table->name eq $ref_table } @$recordsets;
-        croak("Table not found: $ref_table")
-            unless defined($recordset);
 
         my $ref_field = $constraint->reference_fields->[0];
         my @values = $recordset->get_column_values($ref_field);
-        croak("Field not found: $ref_field in table: $ref_table")
+        croak("[Foreign key] Field not found: $ref_field in table $ref_table\n")
             unless @values;
+
         my $v_size = scalar(@values);
         return map { $values[int(rand($v_size))] } (1..$n);
     } elsif ($field->is_primary_key or
@@ -106,13 +105,9 @@ datatype 'enum' => sub {
     my ($builder, $field, $n, $recordsets) = @_;
     my $list = $field->extra->{list} || [];
     my $size = scalar(@$list);
-    croak("Can't select value from empty ENUM list: " . $field->name)
+    croak("Can't select value from empty ENUM list: " . $field->name . "\n")
         if $size == 0;
     return map { $list->[int(rand($size))] } (1..$n);
 };
-
-# TODO : support these data types
-# - float
-# - double
 
 1;
